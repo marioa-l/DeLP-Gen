@@ -13,11 +13,10 @@ class ComputeMetrics:
                  path_dataset: str,
                  path_delp: str) -> None:
         """
-        The constructor for the experiment class
-        
+        The constructor for the experiment class 
         Args:
-            path_file_results (str): The path for save results files
-            file_results_name (str): The name of the result file
+            -path_file_results: The path for save results files
+            -file_results_name: The name of the result file
         """
         self.path_file_results = path_file_results
         self.file_results_name = file_results_name
@@ -65,11 +64,10 @@ class ComputeMetrics:
     def count_lines(self, root: int, lines: list, level=0) -> int:
         """
         Count the number of lines of a dialectical tree with root <root>
-
         Args:
-            root: The id of the root argument
-            lines: List of all defeat relationships to build all arg lines
-                [[arg, defeater, id_arg, id_defeater],...]
+            -root: The id of the root argument
+            -lines: List of all defeat relationships to build all arg lines
+                    [[arg, defeater, id_arg, id_defeater],...]
         """
         childs = [defeaters[3] for defeaters in lines if defeaters[2] == root]
         if len(childs) == 0:
@@ -247,4 +245,4 @@ experiment.show_setting()
 #experiment.main(500, experiment.build_path_result())
 #experiment.compute_one()
 #experiment.compute_dataset(10)
-experiment.utils.draw_histo('./test.json', './histo')
+
