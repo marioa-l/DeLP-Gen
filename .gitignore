@@ -1,6 +1,6 @@
 *.json
+*.txt
 __pycache__/
 tests.py
-notes.txt
 globalCore
 
