@@ -101,9 +101,7 @@ class ComputeMetrics:
                 if ',' in argument_key:
                     def_rules_in_body = len(argument[argument_key]["subarguments"])
                     if def_rules_in_body != 0: 
-                        self.utils.print_msj("OK", argument_key)
                         delete_presum = sum(1 if re.match('\[\([a-zA-Z]*\-\<[t|T]rue\)\]',subs) else 0 for subs in argument[argument_key]["subarguments"])
-                        self.utils.print_msj("OK", str(def_rules_in_body - delete_presum))
                         n_arguments += 1  
                         n_def_rules += def_rules_in_body - delete_presum
                         defeaters = argument[argument_key]['defeats']
@@ -143,7 +141,6 @@ class ComputeMetrics:
             avg_height_lines = sum_height_lines / n_arg_lines
         if tree_numbers != 0.0:
             avg_arg_lines = n_arg_lines / tree_numbers   # N° lines / N° Trees
-        self.utils.print_msj("INFO", str(float('{0:.2f}'.format(avg_def_rules))))
         return {
             'n_arguments': int(n_arguments),
             'n_defeaters': int(n_defeaters),
@@ -229,20 +226,20 @@ class ComputeMetrics:
 
 
 # Programs and dataset for test
-dataset = "/mnt/dat/projects/programs/propio/test/"
+dataset = "/mnt/dat/projects/programs/propio/test/lines/"
 delp = "/mnt/dat/projects/programs/propio/altura/delp9.delp"
 delp_prueba = "/mnt/dat/projects/programs/propio/test_delp.delp"
 delp_prueba2 = "/mnt/dat/projects/programs/propio/delpINT.delp"
 # Main
 experiment = ComputeMetrics(
         './', # Path for result
-        'test', # Result file name
+        'salidaLines0', # Result file name
         dataset,
         delp_prueba2) # DeLP)
 
 experiment.show_setting()
 
 #experiment.main(500, experiment.build_path_result())
-#experiment.compute_one()
-#experiment.compute_dataset(10)
-
+experiment.compute_one()
+#experiment.compute_dataset(50)
+#experiment.utils.write_metrics(experiment.build_path_result())

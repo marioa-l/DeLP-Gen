@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import sys
 
-# Index of literals
-COUNT_LIT = 0
-
+"""
+Default values for all hiperparameters
+"""
 # Probability to Facts elements in the KB BASE
 FACT_PROB = 0.5
 
@@ -13,7 +13,7 @@ FACT_PROB = 0.5
 NEG_PROB = 0.5
 
 # Probability of Defeasible Rules in KB
-DEF_RULE_PROB = 0.8
+DEF_RULE_PROB = 0.5
 
 # Probability of attack a inner point of an argument
 INN_POINT_PROB = 0.5
@@ -25,7 +25,7 @@ MAX_BODY_SIZE = 1
 MIN_DIF_ARG_LEVEL = 1
 
 # Max number of arguments in each level
-MAX_ARG_LEVEL = 2
+MAX_ARG_LEVEL = 1
 
 # Max rules defining the same literal 
 # (MAX_RULES_PER_HEAD <= MAX_ARGUMENTS_PER_LEVEL)
@@ -33,17 +33,22 @@ MAX_RULES_PER_HEAD = 1
 
 # Ramification factor for each dialectical tree
 # (Max number of defeater for each argument)
-RAMIFICATION = 1
+RAMIFICATION = 2
 
 # Max height of dialectical trees
-TREE_HEIGHT = 3
+TREE_HEIGHT = 1
 
 # Levels of the KB
-LEVELS = 1
+LEVELS = 1 
+""""""
+
 
 # List to control rules defining the same literal
 # [Litearl...] = Literal to define one rule
 LITERALS = []
+
+# Index of literals
+COUNT_LIT = 0
 
 # Number of a generated program
 n_program: int = 0
@@ -62,18 +67,24 @@ KB_BASE = {
 KB = {}
 
 
-# Create a strict rules:
-# head: A literal (the head of the strict rule)
-# body: A list of literals (the body of the strict rule)
-def create_strict_rule(head, body):
+def create_strict_rule(head: str, body: list) -> str:
+    """
+    Create a strict rule.
+    Args:
+        -head: A literal (the head of the stric rule)
+        -body: A list of literals (the body of the strict rule)
+    """
     body_string = ','.join(body)
     return str(head + ' ' + strict_rule_symbol + ' ' + body_string + '.')
 
 
-# Create a defeasible rules:
-# head: A literal (the head of the defeasible rule)
-# body: A list of literals (the body of the defeasible rule)
-def create_def_rule(head, body):
+def create_def_rule(head: str, body: str) -> str:
+    """
+    Create a defeasible rule.
+    Args:
+        -head: A literal (the head of the defeasible rule)
+        -body: A list of literals (the body of the defeasible rule)
+    """
     body_string = ','.join(body)
     return str(head + ' ' + def_rule_symbol + ' ' + body_string + '.')
 
@@ -107,14 +118,15 @@ def build_body(level):
     return body
 
 
-def build_body_def():
+def build_body_def(body_dim):
     global COUNT_LIT
     body = []
     body_size = np.random.randint(1, MAX_BODY_SIZE + 1, 1)[0]
 
     for aux in range(body_size):
         COUNT_LIT += 1
-        random_FP = np.random.random()
+        #random_FP = np.random.random()
+        random_FP = 1
         polarity = np.random.random()
 
         index = str(COUNT_LIT)
@@ -151,7 +163,7 @@ def build_arguments(level):
             KB[level]['srules'].append([literal, body])
 
         # To create the defeaters
-        # print("To defeat: ", literal)
+        print("Lit: " + literal + " Body: " + str(body)) 
         build_tree(literal, body, level, TREE_HEIGHT)
 
         COUNT_LIT += 1
@@ -217,14 +229,16 @@ def build_tree(literal, body, level, height):
                     inner_point = np.random.choice(inners_point, 1)[0]
                     complement = get_complement(inner_point)
                     # defeater_body = build_body(level)
-                    defeater_body = build_body_def()
+                    defeater_body = build_body_def(len(body))
                     KB[level]['drules'].append([complement, defeater_body])
+                    print("Lit: " + complement + " Body: " + str(defeater_body))
                 else:
                     # Build a defeater for literal
                     complement = get_complement(literal)
                     # defeater_body = build_body(level)
-                    defeater_body = build_body_def()
+                    defeater_body = build_body_def(len(body))
                     KB[level]['drules'].append([complement, defeater_body])
+                    print("Lit: " + complement + " Body: " + str(defeater_body))
         else:
             # Internal levels of the dialectical tree
             defeaters = []
@@ -236,17 +250,19 @@ def build_tree(literal, body, level, height):
                     inner_point = np.random.choice(inners_point, 1)[0]
                     complement = get_complement(inner_point)
                     # defeater_body = build_body(level)
-                    defeater_body = build_body_def()
+                    defeater_body = build_body_def(len(body))
                     KB[level]['drules'].append([complement, defeater_body])
                     defeaters.append([complement, defeater_body])
+                    print("Lit: " + complement + " Body: " + str(defeater_body))
                 else:
                     # Build a defeater for literal
                     # and append in to defeaters list
                     complement = get_complement(literal)
                     # defeater_body = build_body(level)
-                    defeater_body = build_body_def()
+                    defeater_body = build_body_def(len(body))
                     KB[level]['drules'].append([complement, defeater_body])
                     defeaters.append([complement, defeater_body])
+                    print("Lit: " + complement + " Body: " + str(defeater_body))
             for defeater in defeaters:
                 build_tree(defeater[0], defeater[1], level, height - 1)
     else:
@@ -327,5 +343,5 @@ def build_dataset(n_programs, result_path):
 
 result_path = sys.argv[1]
 
-build_dataset(100, result_path)
+build_dataset(1, result_path)
 # main(result_path)

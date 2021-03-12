@@ -42,7 +42,7 @@ class Utils:
         Args:
             -number: The float number to be converted
         """
-       return str(float('{0:.2f}'.format(number))).replace('.',',')
+        return str(float('{0:.2f}'.format(number))).replace('.',',')
 
 
     def write_result(self, path_file: str, result: json) -> None:
@@ -53,7 +53,7 @@ class Utils:
             -result: The json data to be saved
         """
         with open(path_file, 'w') as output:
-            json.dump(result, output, indent=4)
+            json.dump(result, output)
 
     
     def get_data_from_file(self, path_file: str) -> json:
@@ -91,12 +91,12 @@ class Utils:
         def_rules = sum(data['def_rules']) / len(data['def_rules'])
         arg_lines = sum(data['arg_lines']) / len(data['arg_lines']) 
         height_lines = sum(data['height_lines']) / len(data['height_lines'])
-
-        to_write = ('Arguments MDDL H T\n'
+        # Argument | MDDL | H | T    
+        to_write = ('\n'
                     + self.to_string_decimal_format(arguments)
                     + ' ' + self.to_string_decimal_format(def_rules)
                     + ' ' + self.to_string_decimal_format(height_lines)
                     + ' ' + self.to_string_decimal_format(arg_lines))
 
-        with open('./metrics.txt', 'w') as fileOutput:
+        with open('./metrics.txt', 'a') as fileOutput:
             fileOutput.write(to_write)
