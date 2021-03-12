@@ -5,32 +5,19 @@
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
 BOLD	utils.py	/^    BOLD = '\\033[1m'$/;"	v	class:bcolors
-COUNT_LIT	generator.py	/^COUNT_LIT = 0$/;"	v
 ComputeMetrics	delpMetrics.py	/^class ComputeMetrics:$/;"	c
-DEF_RULE_PROB	generator.py	/^DEF_RULE_PROB = 0.5$/;"	v
 ENDC	utils.py	/^    ENDC = '\\033[0m'$/;"	v	class:bcolors
-FACT_PROB	generator.py	/^FACT_PROB = 0.5$/;"	v
 FAIL	utils.py	/^    FAIL = '\\033[91m'$/;"	v	class:bcolors
+Generator	generator.py	/^class Generator:$/;"	c
 HEADER	utils.py	/^    HEADER = '\\033[95m'$/;"	v	class:bcolors
-INN_POINT_PROB	generator.py	/^INN_POINT_PROB = 0.5$/;"	v
-KB	generator.py	/^KB = {}$/;"	v
-KB_BASE	generator.py	/^KB_BASE = {$/;"	v
-LEVELS	generator.py	/^LEVELS = 1 $/;"	v
-LITERALS	generator.py	/^LITERALS = []$/;"	v
-MAX_ARG_LEVEL	generator.py	/^MAX_ARG_LEVEL = 1$/;"	v
-MAX_BODY_SIZE	generator.py	/^MAX_BODY_SIZE = 1$/;"	v
-MAX_RULES_PER_HEAD	generator.py	/^MAX_RULES_PER_HEAD = 1$/;"	v
-MIN_DIF_ARG_LEVEL	generator.py	/^MIN_DIF_ARG_LEVEL = 1$/;"	v
-NEG_PROB	generator.py	/^NEG_PROB = 0.5$/;"	v
 OKBLUE	utils.py	/^    OKBLUE = '\\033[94m'$/;"	v	class:bcolors
 OKCYAN	utils.py	/^    OKCYAN = '\\033[96m'$/;"	v	class:bcolors
 OKGREEN	utils.py	/^    OKGREEN = '\\033[92m'$/;"	v	class:bcolors
-RAMIFICATION	generator.py	/^RAMIFICATION = 2$/;"	v
-TREE_HEIGHT	generator.py	/^TREE_HEIGHT = 1$/;"	v
 UNDERLINE	utils.py	/^    UNDERLINE = '\\033[4m'$/;"	v	class:bcolors
 Utils	utils.py	/^class Utils: $/;"	c
 WARNING	utils.py	/^    WARNING = '\\033[93m'$/;"	v	class:bcolors
 __init__	delpMetrics.py	/^    def __init__(self,$/;"	m	class:ComputeMetrics
+__init__	generator.py	/^    def __init__(self) -> None:$/;"	m	class:Generator
 __init__	utils.py	/^    def __init__(self):$/;"	m	class:Utils
 analyze_results	delpMetrics.py	/^    def analyze_results(self, result):$/;"	m	class:ComputeMetrics
 bcolors	utils.py	/^class bcolors:$/;"	c
@@ -45,10 +32,10 @@ build_tree	generator.py	/^def build_tree(literal, body, level, height):$/;"	f
 compute_dataset	delpMetrics.py	/^    def compute_dataset(self, dataset_length):$/;"	m	class:ComputeMetrics
 compute_one	delpMetrics.py	/^    def compute_one(self) -> None:$/;"	m	class:ComputeMetrics
 count_lines	delpMetrics.py	/^    def count_lines(self, root: int, lines: list, level=0) -> int:$/;"	m	class:ComputeMetrics
-create_def_rule	generator.py	/^def create_def_rule(head: str, body: str) -> str:$/;"	f
-create_strict_rule	generator.py	/^def create_strict_rule(head: str, body: list) -> str:$/;"	f
+create_def_rule	generator.py	/^    def create_def_rule(self, head: str, body: str) -> str:$/;"	m	class:Generator
+create_strict_rule	generator.py	/^    def create_strict_rule(self, head: str, body: list) -> str:$/;"	m	class:Generator
 dataset	delpMetrics.py	/^dataset = "\/mnt\/dat\/projects\/programs\/propio\/test\/lines\/"$/;"	v
-def_rule_symbol	generator.py	/^def_rule_symbol = '-<'$/;"	v
+def_rule_symbol	generator.py	/^    def_rule_symbol = '-<'$/;"	v	class:Generator
 delp	delpMetrics.py	/^delp = "\/mnt\/dat\/projects\/programs\/propio\/altura\/delp9.delp"$/;"	v
 delp_prueba	delpMetrics.py	/^delp_prueba = "\/mnt\/dat\/projects\/programs\/propio\/test_delp.delp"$/;"	v
 delp_prueba2	delpMetrics.py	/^delp_prueba2 = "\/mnt\/dat\/projects\/programs\/propio\/delpINT.delp"$/;"	v
@@ -64,7 +51,7 @@ print_msj	utils.py	/^    def print_msj(self, msg_type: str, text: str) -> None:$
 query_delp_solver	delpMetrics.py	/^    def query_delp_solver(self) -> json:$/;"	m	class:ComputeMetrics
 result_path	generator.py	/^result_path = sys.argv[1]$/;"	v
 show_setting	delpMetrics.py	/^    def show_setting(self) -> None:$/;"	m	class:ComputeMetrics
-strict_rule_symbol	generator.py	/^strict_rule_symbol = '<-'$/;"	v
+strict_rule_symbol	generator.py	/^    strict_rule_symbol = '<-'$/;"	v	class:Generator
 to_delp_format	generator.py	/^def to_delp_format(result_path):$/;"	f
 to_string_decimal_format	utils.py	/^    def to_string_decimal_format(self, number: float) -> str:$/;"	m	class:Utils
 utils	tests.py	/^utils = Utils()$/;"	v

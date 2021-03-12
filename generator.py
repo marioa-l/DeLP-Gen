@@ -3,90 +3,100 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import sys
 
-"""
-Default values for all hiperparameters
-"""
-# Probability to Facts elements in the KB BASE
-FACT_PROB = 0.5
 
-# Probability of negated literals in the KB BASE
-NEG_PROB = 0.5
+class Generator:
 
-# Probability of Defeasible Rules in KB
-DEF_RULE_PROB = 0.5
+    # Symbols
+    strict_rule_symbol = '<-'
+    def_rule_symbol = '-<'
 
-# Probability of attack a inner point of an argument
-INN_POINT_PROB = 0.5
-
-# Max size of body argument
-MAX_BODY_SIZE = 1
-
-# Min number of different arguments in each level
-MIN_DIF_ARG_LEVEL = 1
-
-# Max number of arguments in each level
-MAX_ARG_LEVEL = 1
-
-# Max rules defining the same literal 
-# (MAX_RULES_PER_HEAD <= MAX_ARGUMENTS_PER_LEVEL)
-MAX_RULES_PER_HEAD = 1
-
-# Ramification factor for each dialectical tree
-# (Max number of defeater for each argument)
-RAMIFICATION = 2
-
-# Max height of dialectical trees
-TREE_HEIGHT = 1
-
-# Levels of the KB
-LEVELS = 1 
-""""""
-
-
-# List to control rules defining the same literal
-# [Litearl...] = Literal to define one rule
-LITERALS = []
-
-# Index of literals
-COUNT_LIT = 0
-
-# Number of a generated program
-n_program: int = 0
-
-# Symbols
-strict_rule_symbol = '<-'
-def_rule_symbol = '-<'
-
-# The base of presumptions and facts
-KB_BASE = {
-    'presumptions': [],
-    'facts': []
-}
-
-# The KB
-KB = {}
-
-
-def create_strict_rule(head: str, body: list) -> str:
+    def __init__(self) -> None:
     """
-    Create a strict rule.
-    Args:
-        -head: A literal (the head of the stric rule)
-        -body: A list of literals (the body of the strict rule)
+    Constructor
+
+    Define default values for all hiperparameters
     """
-    body_string = ','.join(body)
-    return str(head + ' ' + strict_rule_symbol + ' ' + body_string + '.')
+    # Probability to Facts elements in the KB BASE
+    self.FACT_PROB = 0.5
+
+    # Probability of negated literals in the KB BASE
+    self.NEG_PROB = 0.5
+
+    # Probability of Defeasible Rules in KB
+    self.DEF_RULE_PROB = 0.5
+
+    # Probability of attack a inner point of an argument
+    self.INN_POINT_PROB = 0.5
+
+    # Max size of body argument
+    self.MAX_BODY_SIZE = 1
+
+    # Min number of different arguments in each level
+    self.MIN_DIF_ARG_LEVEL = 1
+
+    # Max number of arguments in each level
+    self.MAX_ARG_LEVEL = 1
+
+    # Max rules defining the same literal 
+    # (MAX_RULES_PER_HEAD <= MAX_ARGUMENTS_PER_LEVEL)
+    self.MAX_RULES_PER_HEAD = 1
+
+    # Ramification factor for each dialectical tree
+    # (Max number of defeater for each argument)
+    self.RAMIFICATION = 1
+
+    # Max height of dialectical trees
+    self.TREE_HEIGHT = 1
+
+    # Levels of the KB
+    self.LEVELS = 1 
+    """"""
+
+    """
+    Global values
+    """
+    # List to control rules defining the same literal
+    # [Literal] = Literal to define one rule
+    self.LITERALS = []
+    # Index of literals
+    self.COUNT_LIT = 0
+    # Number of program
+    self.N_PROGRAM = []
+    """"""
+    
+    """
+    Structure to save all rules
+    """
+    # The base of presumptions and facts
+    self.KB_BASE = {
+        'presumptions': [],
+        'facts': []
+    }
+
+    # The KB (program)
+    self.KB = {}
+    """"""
+
+    def create_strict_rule(self, head: str, body: list) -> str:
+        """
+        Create a strict rule.
+        Args:
+            -head: A literal (the head of the stric rule)
+            -body: A list of literals (the body of the strict rule)
+        """
+        body_string = ','.join(body)
+        return str(head + ' ' + strict_rule_symbol + ' ' + body_string + '.')
 
 
-def create_def_rule(head: str, body: str) -> str:
-    """
-    Create a defeasible rule.
-    Args:
-        -head: A literal (the head of the defeasible rule)
-        -body: A list of literals (the body of the defeasible rule)
-    """
-    body_string = ','.join(body)
-    return str(head + ' ' + def_rule_symbol + ' ' + body_string + '.')
+    def create_def_rule(self, head: str, body: str) -> str:
+        """
+        Create a defeasible rule.
+        Args:
+            -head: A literal (the head of the defeasible rule)
+            -body: A list of literals (the body of the defeasible rule)
+        """
+        body_string = ','.join(body)
+        return str(head + ' ' + def_rule_symbol + ' ' + body_string + '.')
 
 
 def get_one_rule_level(level):
