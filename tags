@@ -13,47 +13,52 @@ HEADER	utils.py	/^    HEADER = '\\033[95m'$/;"	v	class:bcolors
 OKBLUE	utils.py	/^    OKBLUE = '\\033[94m'$/;"	v	class:bcolors
 OKCYAN	utils.py	/^    OKCYAN = '\\033[96m'$/;"	v	class:bcolors
 OKGREEN	utils.py	/^    OKGREEN = '\\033[92m'$/;"	v	class:bcolors
+Test	tests.py	/^class Test:$/;"	c
 UNDERLINE	utils.py	/^    UNDERLINE = '\\033[4m'$/;"	v	class:bcolors
 Utils	utils.py	/^class Utils: $/;"	c
 WARNING	utils.py	/^    WARNING = '\\033[93m'$/;"	v	class:bcolors
 __init__	delpMetrics.py	/^    def __init__(self,$/;"	m	class:ComputeMetrics
 __init__	generator.py	/^    def __init__(self) -> None:$/;"	m	class:Generator
+__init__	tests.py	/^    def __init__(self):$/;"	m	class:Test
 __init__	utils.py	/^    def __init__(self):$/;"	m	class:Utils
 analyze_results	delpMetrics.py	/^    def analyze_results(self, result):$/;"	m	class:ComputeMetrics
 bcolors	utils.py	/^class bcolors:$/;"	c
-build_arguments	generator.py	/^def build_arguments(level):$/;"	f
-build_body	generator.py	/^def build_body(level):$/;"	f
-build_body_def	generator.py	/^def build_body_def(body_dim):$/;"	f
-build_dataset	generator.py	/^def build_dataset(n_programs, result_path):$/;"	f
-build_kb	generator.py	/^def build_kb(level):$/;"	f
-build_kb_base	generator.py	/^def build_kb_base(dim_kb_base):$/;"	f
+build_arguments	generator.py	/^    def build_arguments(level: int) -> None:$/;"	m	class:Generator
+build_body	generator.py	/^    def build_body(level: int) -> list:$/;"	m	class:Generator
+build_body_def	generator.py	/^    def build_body_def(body_dim: int) -> list:$/;"	m	class:Generator
+build_kb	generator.py	/^    def build_kb(level: int) -> None:$/;"	m	class:Generator
+build_kb_base	generator.py	/^    def build_kb_base(dim_kb_base: int) -> None:$/;"	m	class:Generator
 build_path_result	delpMetrics.py	/^    def build_path_result(self) -> str:$/;"	m	class:ComputeMetrics
-build_tree	generator.py	/^def build_tree(literal, body, level, height):$/;"	f
+build_tree	generator.py	/^    def build_tree(self, literal: str, body: list, level: int, height: int) -> None:$/;"	m	class:Generator
 compute_dataset	delpMetrics.py	/^    def compute_dataset(self, dataset_length):$/;"	m	class:ComputeMetrics
 compute_one	delpMetrics.py	/^    def compute_one(self) -> None:$/;"	m	class:ComputeMetrics
 count_lines	delpMetrics.py	/^    def count_lines(self, root: int, lines: list, level=0) -> int:$/;"	m	class:ComputeMetrics
 create_def_rule	generator.py	/^    def create_def_rule(self, head: str, body: str) -> str:$/;"	m	class:Generator
 create_strict_rule	generator.py	/^    def create_strict_rule(self, head: str, body: list) -> str:$/;"	m	class:Generator
 dataset	delpMetrics.py	/^dataset = "\/mnt\/dat\/projects\/programs\/propio\/test\/lines\/"$/;"	v
-def_rule_symbol	generator.py	/^    def_rule_symbol = '-<'$/;"	v	class:Generator
 delp	delpMetrics.py	/^delp = "\/mnt\/dat\/projects\/programs\/propio\/altura\/delp9.delp"$/;"	v
 delp_prueba	delpMetrics.py	/^delp_prueba = "\/mnt\/dat\/projects\/programs\/propio\/test_delp.delp"$/;"	v
 delp_prueba2	delpMetrics.py	/^delp_prueba2 = "\/mnt\/dat\/projects\/programs\/propio\/delpINT.delp"$/;"	v
+drule_symbol	generator.py	/^    drule_symbol = '-<'$/;"	v	class:Generator
 experiment	delpMetrics.py	/^experiment = ComputeMetrics($/;"	v
-get_complement	generator.py	/^def get_complement(literal):$/;"	f
+generate	generator.py	/^    def generate(self, result_path: str) -> None:$/;"	m	class:Generator
+get_choice	utils.py	/^    def get_choice(self, choices: Union[int, list]) -> Union[int, list]:$/;"	m	class:Utils
+get_complement	utils.py	/^    def get_complement(self, literal: str) -> str:$/;"	m	class:Utils
 get_data_from_file	utils.py	/^    def get_data_from_file(self, path_file: str) -> json:$/;"	m	class:Utils
-get_one_rule_all_levels	generator.py	/^def get_one_rule_all_levels(top_level):$/;"	f
-get_one_rule_level	generator.py	/^def get_one_rule_level(level):$/;"	f
+get_one_rule_all_levels	generator.py	/^    def get_one_rule_all_levels(self, top_level: int) -> str:$/;"	m	class:Generator
+get_one_rule_level	generator.py	/^    def get_one_rule_level(self, level: int) -> str:$/;"	m	class:Generator
+get_randint	utils.py	/^    def get_randint(self, a: int, b: int) -> int:$/;"	m	class:Utils
+get_random	tests.py	/^    def get_random(self) -> float:$/;"	m	class:Test
+get_random	utils.py	/^    def get_random(self) -> float:$/;"	m	class:Utils
 load	delpMetrics.py	/^    def load(self, filePath):$/;"	m	class:ComputeMetrics
-main	generator.py	/^def main(result_path):$/;"	f
-main	tests.py	/^def main():$/;"	f
 print_msj	utils.py	/^    def print_msj(self, msg_type: str, text: str) -> None:$/;"	m	class:Utils
 query_delp_solver	delpMetrics.py	/^    def query_delp_solver(self) -> json:$/;"	m	class:ComputeMetrics
-result_path	generator.py	/^result_path = sys.argv[1]$/;"	v
 show_setting	delpMetrics.py	/^    def show_setting(self) -> None:$/;"	m	class:ComputeMetrics
-strict_rule_symbol	generator.py	/^    strict_rule_symbol = '<-'$/;"	v	class:Generator
-to_delp_format	generator.py	/^def to_delp_format(result_path):$/;"	f
+srule_symbol	generator.py	/^    srule_symbol = '<-'$/;"	v	class:Generator
+test	tests.py	/^test = Test()$/;"	v
+to_delp_format	generator.py	/^    def to_delp_format(self, result_path: str) -> None:$/;"	m	class:Generator
 to_string_decimal_format	utils.py	/^    def to_string_decimal_format(self, number: float) -> str:$/;"	m	class:Utils
-utils	tests.py	/^utils = Utils()$/;"	v
+utils	generator.py	/^    utils = Utils()$/;"	v	class:Generator
+utils	tests.py	/^    utils = Utils()$/;"	v	class:Test
 write_metrics	utils.py	/^    def write_metrics(self, result_path_file: str):$/;"	m	class:Utils
 write_result	utils.py	/^    def write_result(self, path_file: str, result: json) -> None:$/;"	m	class:Utils

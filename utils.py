@@ -1,5 +1,7 @@
 import json
 import matplotlib.pyplot as pyplot
+import numpy as np
+from typing import Union
 
 class bcolors:
     HEADER = '\033[95m'
@@ -100,3 +102,42 @@ class Utils:
 
         with open('./metrics.txt', 'a') as fileOutput:
             fileOutput.write(to_write)
+
+
+    def get_random(self) -> float:
+        """
+        Generate and return a float number from [0,1)
+        """
+        return np.random.random()
+
+
+    def get_choice(self, choices: Union[int, list]) -> Union[int, list]:
+        """
+        Get and return an element from a list or from [0,choices)
+        (if choices is an int)
+        Args:
+            -choices: List of elements or an int
+        """
+        return np.random.choice(choices, 1)[0]
+
+
+    def get_randint(self, a: int, b: int) -> int:
+        """
+        Get a random int from [a,b]
+        Args:
+            a: lower bound
+            b: upper bound
+        """
+        return np.random.randint(a, b, 1)[0]
+
+
+    def get_complement(self, literal: str) -> str:
+        """
+        Get the complement of a literal
+        Args:
+            -literal: The literal to obtain its complement
+        """
+        if '~' in literal:
+            return literal.replace('~', '')
+        else:
+            return '~' + literal
