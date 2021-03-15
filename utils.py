@@ -1,5 +1,7 @@
 import json
 import matplotlib.pyplot as pyplot
+import numpy as np
+from typing import Union
 
 class bcolors:
     HEADER = '\033[95m'
@@ -16,24 +18,18 @@ class Utils:
 
     def __init__(self):
         pass
-        
     
-    def print_msj(self, msg_type: str, text: str) -> None:
-        """
-        To print messages with differents colors
-        Args:
-            -msg_type: 
-                'Error': To show an error
-                'Info': To show information
-                'OK': To show correct outputs
-            -text: The text to be printed
-        """
-        if msg_type == 'ERROR':
-            print(bcolors.FAIL + text + bcolors.ENDC)
-        elif msg_type == 'INFO':
-            print(bcolors.UNDERLINE + text + bcolors.ENDC)
-        elif msg_type == 'OK':
-            print(bcolors.OKGREEN + text + bcolors.ENDC)
+
+    def print_error(self, msg: str) -> None:
+        print(bcolors.FAIL + str(msg) + bcolors.ENDC)
+
+
+    def print_info(self, msg: str) -> None:
+        print(bcolors.UNDERLINE + str(msg) + bcolors.ENDC)
+
+
+    def print_ok(self, msg: str) -> None:
+        print(bcolors.OKGREEN + str(msg) + bcolors.ENDC)
 
    
     def to_string_decimal_format(self, number: float) -> str:
@@ -100,3 +96,76 @@ class Utils:
 
         with open('./metrics.txt', 'a') as fileOutput:
             fileOutput.write(to_write)
+
+
+    def get_random(self) -> float:
+        """
+        Generate and return a float number from [0,1)
+        """
+        return np.random.random()
+
+
+    def get_choice(self, choices: Union[int, list]):
+        """
+        Get and return an element from a list or from [0,choices)
+        (if choices is an int)
+        Args:
+            -choices: List of elements or an int
+        """
+        return np.random.choice(choices, 1)[0]
+
+
+    def get_randint(self, a: int, b: int) -> int:
+        """
+        Get a random int from [a,b]
+        Args:
+            a: lower bound
+            b: upper bound
+        """
+        return np.random.randint(a, b, 1)[0]
+
+
+    def get_complement(self, literal: str) -> str:
+        """
+        Get the complement of a literal
+        Args:
+            -literal: The literal to obtain its complement
+        """
+        if '~' in literal:
+            return literal.replace('~', '')
+        else:
+            return '~' + literal
+
+
+class Map(dict):
+    """
+    Example:
+    m = Map({'first_name': 'Eduardo'}, last_name='Pool', age=24, sports=['Soccer'])
+    """
+    def __init__(self, *args, **kwargs):
+        super(Map, self).__init__(*args, **kwargs)
+        for arg in args:
+            if isinstance(arg, dict):
+                for k, v in arg.items():
+                    self[k] = v
+
+        if kwargs:
+            for k, v in kwargs.iteritems():
+                self[k] = v
+
+    def __getattr__(self, attr):
+        return self.get(attr)
+
+    def __setattr__(self, key, value):
+        self.__setitem__(key, value)
+
+    def __setitem__(self, key, value):
+        super(Map, self).__setitem__(key, value)
+        self.__dict__.update({key: value})
+
+    def __delattr__(self, item):
+        self.__delitem__(item)
+
+    def __delitem__(self, key):
+        super(Map, self).__delitem__(key)
+        del self.__dict__[key]
