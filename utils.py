@@ -139,6 +139,7 @@ class Utils:
 
 class Map(dict):
     """
+    To map dict
     Example:
     m = Map({'first_name': 'Eduardo'}, last_name='Pool', age=24, sports=['Soccer'])
     """
