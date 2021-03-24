@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
 from utils import *
+import json
 
 """
 Hyperparams
@@ -87,9 +88,9 @@ class Generator:
         """
         Global values and auxiliar structures
         """
-        # List to control rules defining the same literal
-        # [Literal] = Literal to define one rule
-        self.LITERALS = []
+        # List to control rules defining the same head
+        # [head] = Head to define one rule
+        self.HEADS = []
         # Index of literals
         self.COUNT_LIT = 0
         # Used rules
@@ -222,6 +223,7 @@ class Generator:
                 --level: Level of the rule
                 --pos: Index of the rule in the level <level>
         """
+        #self.utils.print_info(str(self.USED_HEADS))
         possibles_drules = [index for index, drule in 
                                     enumerate(self.levels[level]["drules"]) if 
                                     drule[0] not in self.USED_HEADS]
@@ -237,7 +239,10 @@ class Generator:
                 rule = ('drules', level, index_drule)
             else:
                 # Build a drule and put into the level <level>?
-                pass
+                #self.utils.print_error("No more drules!")
+                lit = self.get_new_literal()
+                self.levels[0]['drules'].append([lit, ('true',)])
+                rule = ('drules', 0, len(self.levels[0]['drules']) - 1)
         else:
             if len(possibles_srules) != 0:
                 # Take a srule (its position) from level <level>
@@ -245,8 +250,11 @@ class Generator:
                 rule = ('srules', level, index_srule)
             else:
                 # Build a srule and put into the level <level>?
-                pass
-        
+                #self.utils.print_error("No more srules!")
+                lit = self.get_new_literal()
+                self.levels[0]['srules'].append([lit, ('true',)])
+                rule = ('srules', 0, len(self.levels[0]['srules']) - 1)
+        #self.utils.print_error(str(rule))
         return rule
 
 
@@ -265,10 +273,15 @@ class Generator:
         self.USED_HEADS.append(self.utils.get_complement(conclusion))
 
         body_size = self.utils.get_randint(1, self.params["MAX_BODYSIZE"])
-        rule = self.get_one_rule_level(level - 1) 
+        rule = self.get_one_rule_level(level - 1)
+        self.USED_HEADS.append(self.levels[rule[1]][rule[0]][rule[2]][0])
         body.append(rule)
+
         for aux in range(body_size - 1):
-            body.append(self.get_one_rule_all_levels(level - 1, body, literal))
+            select_level = self.utils.get_choice(level)
+            new_rule = self.get_one_rule_level(select_level)
+            self.USED_HEADS.append(self.levels[new_rule[1]][new_rule[0]][new_rule[2]][0])
+            body.append(new_rule) 
         
         self.USED_HEADS = []
         return body
@@ -360,40 +373,48 @@ class Generator:
         Args:
             -level: A KB level
         """
+        # To save all arguments in this level
         self.levels[level] = {'drules': [], 'srules': []}
-        for aux in range(self.params["MIN_ARGSLEVEL"]):
-            head = self.get_new_literal()
-            #rules_head = self.utils.get_randint(1, self.params.MAX_RULESPERHEAD + 1)
-            #self.LITERALS.extend([literal] * (rules_head - 1))
-            body = self.build_body(level, head)
-            self.add_to_kb(level, head, body, 'rnd')
-            # To create the defeaters
-            #print("Lit: " + literal + " Body: " + str(body)) 
-            #self.build_tree(literal, body, level, self.params.TREE_HEIGHT)
+        # Min number of different argumens in the level
+        min_args = self.params["MIN_ARGSLEVEL"]
+        # To determine max number of arguments in the level
+        to_complete_level = self.params["MAX_ARGSLEVEL"] - min_args
+        max_args = self.utils.get_randint(1, to_complete_level) 
 
-        # To complete level
-        #max_level = self.utils.get_randint(self.params.MIN_ARGSLEVEL, 
-        #                                    self.params.MAX_ARGSLEVEL + 1)
-        #for aux in range(max_level - 1):
-        #    if len(self.LITERALS) != 0:
-        #        literal = self.utils.get_choice(self.LITERALS)
-        #        self.LITERALS.remove(literal)
-        #        body = self.build_body(level, literal)
-        #        self.add_to_kb(level, literal, body, 'rnd')
-        #        # To create the defeaters
-        #        # print("To defeat: ", literal)
-        #        # build_tree(literal, body, level, TREE_HEIGHT)
-        #    else:
-        #        # There are no more pending literals to construct rules
-        #        literal = self.get_new_literal()
-        #        rules_head = self.utils.get_randint(1, 
-        #                                    self.params.MAX_RULESPERHEAD + 1)
-        #        self.LITERALS.extend([literal] * (rules_head - 1))
-        #        body = self.build_body(level, literal)
-        #        self.add_to_kb(level, literal, body, 'rnd')
-        #        # To create the defeaters
-        #        # print("To defeat: ", literal)
-        #        # build_tree(literal, body, level, TREE_HEIGHT)
+        for aux in range(min_args):
+            # Generate a new head (conclusion)
+            head = self.get_new_literal()
+            # To define how many rules with the same head to create
+            rules_head = self.utils.get_randint(1, self.params["MAX_RULESPERHEAD"])
+            self.HEADS.extend([head] * (rules_head ))
+            # Generete the body of the argument
+            body = self.build_body(level, head)
+            # Add to the KB
+            self.add_to_kb(level, head, body, 'rnd')
+
+            # Create the dialectical trees?
+
+        for aux in range(max_level):
+            # To complete the level with arguments for conclusions already defined
+            # (rules_head)
+            if len(self.HEADS) != 0:
+                # Select a head to build another argument
+                head = self.utils.get_choice(self.LITERALS)
+                # Delete from HEADS pending
+                self.HEADS.remove(head)
+                # Generete another budy for <head> (other argument)
+                body = self.build_body(level, literal)
+                # Add to the KB
+                self.add_to_kb(level, head, body, 'rnd')
+                
+            # To complete the level with new arguments
+            else:
+                literal = self.get_new_literal()
+                rules_head = self.utils.get_randint(1, 
+                                            self.params.MAX_RULESPERHEAD + 1)
+                self.LITERALS.extend([literal] * (rules_head - 1))
+                body = self.build_body(level, literal)
+                self.add_to_kb(level, literal, body, 'rnd')
 
 
     def build_tree(self, literal: str, body: list, level: int, height: int) -> None:
@@ -551,4 +572,4 @@ class Generator:
             self.clear_datastructures()
             self.build_kb_base()
             self.build_kb(self.params["LEVELS"])
-            self.to_delp_format(result_path, id_program)
+            self.to_delp_format(result_path, id_program) 

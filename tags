@@ -57,6 +57,7 @@ get_one_rule_level	generator.py	/^    def get_one_rule_level(self, level: int) -
 get_randint	utils.py	/^    def get_randint(self, a: int, b: int) -> int:$/;"	m	class:Utils
 get_random	utils.py	/^    def get_random(self) -> float:$/;"	m	class:Utils
 load	delpMetrics.py	/^    def load(self, filePath):$/;"	m	class:ComputeMetrics
+pretty	utils.py	/^    def pretty(self, d, indent=0):$/;"	m	class:Utils
 print_error	utils.py	/^    def print_error(self, msg: str) -> None:$/;"	m	class:Utils
 print_info	utils.py	/^    def print_info(self, msg: str) -> None:$/;"	m	class:Utils
 print_ok	utils.py	/^    def print_ok(self, msg: str) -> None:$/;"	m	class:Utils
