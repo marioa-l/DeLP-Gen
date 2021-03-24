@@ -1,16 +1,16 @@
+import copy
+from io import SEEK_CUR
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
-import sys
 from utils import *
-import json
 
 """
 Hyperparams
 
 # Size of the KB Base
 KBBASE_SIZE
-        
+    
 # Probability to Facts elements in the KB BASE
 FACT_PROB
 
@@ -55,7 +55,7 @@ class Generator:
     # Symbols
     srule_symbol = '<-'
     drule_symbol = '-<'
-    
+
     #Utils
     utils = Utils()
 
@@ -67,7 +67,7 @@ class Generator:
         """
         Define default values for all hyperparameters
         """ 
-        self.params = Map({
+        self.params = {
                 "KBBASE_SIZE": 5,
                 "FACT_PROB": 0.5,
                 "NEG_PROB": 0.5,
@@ -80,35 +80,39 @@ class Generator:
                 "RAMIFICATION": 1,
                 "TREE_HEIGHT": 1,
                 "INNER_PROB": 0.5,
-                "N_PROGRAMS": 1
-                })
+                "N_PROGRAMS": 1,
+                "PREF_CRITERION": "more_specific"
+                }
 
         """
-        Global values
+        Global values and auxiliar structures
         """
         # List to control rules defining the same literal
         # [Literal] = Literal to define one rule
         self.LITERALS = []
         # Index of literals
         self.COUNT_LIT = 0
+        # Used rules
+        self.USED_HEADS = []
         """"""
         
         """
         Structure to save all rules
         """
-        # The base of presumptions and facts
-        self.KB_BASE = {
-            'presumptions': [],
-            'facts': []
-        }
+        self.rule = {
+                'drules': [],
+                'srules': [],
+                'facts': [],
+                'presumptions': []
+                } 
 
         # The KB (program)
-        self.KB = {}
+        self.levels = {}
         """"""
 
 
     def define_hyperparams(self, hyperparams: dict) -> None:
-        self.params = Map(hyperparams)
+        self.params = copy.copy(hyperparams)
 
 
     def clear_datastructures(self) -> None:
@@ -117,108 +121,237 @@ class Generator:
         """
         self.LITERALS = []
         self.COUNT_LIT = 0
-        self.KB_BASE['presumptions'] = []
-        self.KB_BASE['facts'] = []
-        self.KB = {}
+        self.USED_RULES = []
+        self.rules = {
+                'drules': [],
+                'srules': [],
+                'facts': [],
+                'presumptions': []
+                }
+        self.levels = {}
 
 
-    def create_strict_rule(self, head: str, body: list) -> str:
+    def get_new_id(self) -> str:
+        """
+        Return an id for literal and update the counter
+        """
+        id = str(self.COUNT_LIT)
+        self.COUNT_LIT += 1
+        return id
+
+
+    def create_strict_rule(self, head: str, body: Union[list,tuple]) -> str:
         """
         Create a strict rule.
         Args:
             -head: A literal (the head of the stric rule)
             -body: A list of literals (the body of the strict rule)
         """
-        body_string = ','.join(body)
+        if isinstance(body, tuple):
+            # Is fact
+            body_string = 'true'
+        else:
+            # Is rule
+            body_literals = self.get_body_literals(body)
+            body_string = ','.join(body_literals)
+
         return str(head + ' ' + self.srule_symbol + ' ' + body_string + '.')
 
 
-    def create_def_rule(self, head: str, body: str) -> str:
+    def create_def_rule(self, head: str, body: Union[list, tuple]) -> str:
         """
         Create a defeasible rule.
         Args:
             -head: A literal (the head of the defeasible rule)
             -body: A list of literals (the body of the defeasible rule)
         """
-        body_string = ','.join(body)
+        if isinstance(body, tuple):
+            # Is fact
+            body_string = 'true'
+        else:
+            # Is rule
+            body_literals = self.get_body_literals(body)
+            body_string = ','.join(body_literals)
+
         return str(head + ' ' + self.drule_symbol + ' ' + body_string + '.')
+    
+
+    def get_body_literals(self, body: list) -> list:
+        body_literals = []
+        for tup_info in body:
+            literal = self.levels[tup_info[1]][tup_info[0]][tup_info[2]][0]
+            body_literals.append(literal)
+        return body_literals
 
 
-    def get_one_rule_level(self, level: int) -> str:
+    def get_new_literal(self) -> str:
+        polarity = self.utils.get_random()
+
+        atom = 'a_' + self.get_new_id()
+        if polarity < self.params["NEG_PROB"]:
+            literal = self.utils.get_complement(atom)
+        else:
+            literal = atom
+        
+        return literal
+
+
+    def add_to_kb(self, level: int, head: str, body: list, type: str) -> None:
+        if type == 'rnd':
+            random_DS = self.utils.get_random()
+            if random_DS < self.params["DRULE_PROB"]:
+                self.levels[level]['drules'].append([head, body])
+                self.rules['drules'].append(head)
+            else:
+                self.levels[level]['srules'].append([head, body])
+                self.rules['srules'].append(head)
+        else:
+            self.levels[level][type].append([head, body])
+            self.rules[type].append(head)
+
+
+
+    def get_one_rule_level(self, level: int) -> tuple:
         """
-        Select a head rule (literal) from a particular level
+        Select a rule from possibles rules to build an argument body
         Args:
             -level: A KB level
+        Out:
+            -tuple: A tuple of the form (type, level, pos)
+                --type: 'drule' or 'srule'
+                --level: Level of the rule
+                --pos: Index of the rule in the level <level>
         """
-        random = self.utils.get_random()
-        if random < self.params.DRULE_PROB and len(self.KB[level]['drules']) != 0:
-            index = self.utils.get_choice(len(self.KB[level]['drules']))
-            return self.KB[level]['drules'][index][0]
-        elif len(self.KB[level]['srules']) != 0:
-            index = self.utils.get_choice(len(self.KB[level]['srules']))
-            return self.KB[level]['srules'][index][0]
+        possibles_drules = [index for index, drule in 
+                                    enumerate(self.levels[level]["drules"]) if 
+                                    drule[0] not in self.USED_HEADS]
+        possibles_srules = [index for index, srule in 
+                                    enumerate(self.levels[level]["srules"]) if 
+                                    srule[0] not in self.USED_HEADS]
+    
+        random_DS = self.utils.get_random()
+        if random_DS < self.params["DRULE_PROB"]:
+            if len(possibles_drules) != 0:
+                # Take a drule (its position) from level <level>
+                index_drule = self.utils.get_choice(possibles_drules)
+                rule = ('drules', level, index_drule)
+            else:
+                # Build a drule and put into the level <level>?
+                pass
         else:
-            index = self.utils.get_choice(len(self.KB[level]['drules']))
-            return self.KB[level]['drules'][index][0]
+            if len(possibles_srules) != 0:
+                # Take a srule (its position) from level <level>
+                index_srule = self.utils.get_choice(possibles_srules)
+                rule = ('srules', level, index_srule)
+            else:
+                # Build a srule and put into the level <level>?
+                pass
+        
+        return rule
 
 
-    def get_one_rule_all_levels(self, top_level: int) -> str:
+    def build_body(self, level: int, conclusion: str) -> list:
         """
-        Select a head rule (literal) from a level in [0, top_level]
-        Args:
-            -top_level: A KB level
-        """
-        select_from = self.utils.get_randint(0, top_level)
-        return get_one_rule_level(select_from)
-
-
-    def build_body(self, level: int) -> list:
-        """
-        Build a list of literals whit at least one litera from
+        Build an argument body (a list of tuples) whit at least one rule from
         a particular KB level.
         Args:
             -level: A KB level
+            -conclusion: The conclusion of the argument for which we are 
+            creating a body
         """
         body = []
-        body_size = self.utils.get_randint(1, self.params.MAX_BODYSIZE + 1)
-        body.append(self.get_one_rule_level(level - 1))
 
+        self.USED_HEADS.append(conclusion)
+        self.USED_HEADS.append(self.utils.get_complement(conclusion))
+
+        body_size = self.utils.get_randint(1, self.params["MAX_BODYSIZE"])
+        rule = self.get_one_rule_level(level - 1) 
+        body.append(rule)
         for aux in range(body_size - 1):
-            body.append(self.get_one_rule_all_levels(level))
-
+            body.append(self.get_one_rule_all_levels(level - 1, body, literal))
+        
+        self.USED_HEADS = []
         return body
 
 
-    def build_body_def(self, body_dim: int) -> list:
+    def build_body_incremental(self, defeated_body: list) -> list:
+        """
+        Build a list of literals adding them to the KB Base
+        Args:
+            defeated_body: body of the defeated argument
+        """
+        defeater_body = copy.copy(defeated_body)
+        index = self.get_new_id()
+        literal = 'a_' + index
+        self.KB_BASE['presumptions'].append(literal)
+        self.KB[0]['drules'].append([literal,['true']])
+        defeater_body.append(literal)
+        #dim_defeater_body = len(defeated_body) + 1
+        #for lit in range(dim_defeater_body):
+        #    index = self.get_new_id()
+        #    literal = 'a_' + index
+        #    self.utils.print_error(literal)
+        #    self.KB_BASE['presumptions'].append(literal)
+        #    self.KB[0]['drules'].append([literal, ['true']])
+        #    defeater_body.append(literal)
+        return defeater_body
+
+
+
+
+    def build_body_def(self, defeated_body: list, defeated_lit: str, head: str) -> list:
         """
         PENDING!!!
         Build a list of literals with len body_dim
         Args:
-            -body_dim: Size of the body (number of literals)
-        """ 
-        body = []
-        body_size = self.utils.get_randint(1, self.params.MAX_BODYSIZE + 1)
+            -level: Level of the defeated argument
+        """
+        self.utils.print_error('To defeat: ' + str(defeated_body))
+        
+        defeater_body = []
 
-        for aux in range(body_size):
-            self.COUNT_LIT += 1
-            #random_FP = np.random.random()
-            random_FP = 1
-            polarity = self.utils.get_random()
+        defeated_drules = [drule for drule in defeated_body if drule in self.rules['drules']]
+        defeated_srules = [srule for srule in defeated_body if srule in self.rules['srules']]
+        
+        #????
+        def_conclusion = [defeated_lit, self.utils.get_complement(defeated_lit), head, self.utils.get_complement(head)]
+        self.utils.print_error(str(def_conclusion))
 
-            index = str(self.COUNT_LIT)
-            literal = ('~a_' + index if polarity < self.params.NEG_PROB else 
-                                        'a_' + index)
-            if random_FP < self.params.FACT_PROB:
-                # New Fact
-                self.KB_BASE['facts'].append(literal)
-                self.KB[0]['srules'].append([literal, ['true']])
+        possible_drules = [drule for drule in self.rules['drules'] if drule not in defeated_drules + def_conclusion]
+        possible_srules = [srule for srule in self.rules['srules'] if srule not in defeated_srules + def_conclusion]
+
+        if len(defeated_srules) == 0:
+            defeater_body = copy.copy(defeated_body)
+            if defeated_lit in defeater_body: defeater_body.remove(defeated_lit)
+            if self.utils.get_complement(defeated_lit) in defeater_body: defeater_body.remove(self.utils.get_complement(defeated_lit)) 
+            if len(possible_drules) != 0:
+                defeater_body.append(self.utils.get_choice(possible_drules))
             else:
+                # Add new presumption or fact
                 # New Presumption
+                literal = 'a_' + str(self.COUNT_LIT)
+                self.COUNT_LIT += 1
                 self.KB_BASE['presumptions'].append(literal)
                 self.KB[0]['drules'].append([literal, ['true']])
-            body.append(literal)
-
-        return body
+                self.rules['drules'].append(literal)
+                defeater_body.append(literal)
+            return defeater_body
+        else:
+            defeater_body = copy.copy(defeated_body)
+            if defeated_lit in defeater_body: defeater_body.remove(defeated_lit)
+            if self.utils.get_complement(defeated_lit) in defeater_body: defeater_body.remove(self.utils.get_complement(defeated_lit)) 
+            if len(possible_srules) != 0:
+                defeater_body.append(self.utils.get_choice(possible_srules))
+            else:
+                # Add new presumption or fact
+                # New fact
+                literal = 'a_' + str(self.COUNT_LIT)
+                self.COUNT_LIT += 1
+                self.KB_BASE['fact'].append(literal)
+                self.KB[0]['srules'].append([literal, ['true']])
+                self.rules['srules'].append(literal)
+                defeater_body.append(literal)
+            return defeater_body
 
 
     def build_arguments(self, level: int) -> None:
@@ -227,64 +360,40 @@ class Generator:
         Args:
             -level: A KB level
         """
-        self.KB[level] = {'drules': [], 'srules': []}
-
-        for aux in range(self.params.MIN_ARGSLEVEL):
-            index = str(self.COUNT_LIT)
-            polarity = self.utils.get_random()
-            literal = ('~a_' + index if polarity < self.params.NEG_PROB else 
-                        'a_' + index)
-            rules_head = self.utils.get_randint(1, self.params.MAX_RULESPERHEAD + 1)
-            self.LITERALS.extend([literal] * (rules_head - 1))
-            body = self.build_body(level)
-            random_DS = self.utils.get_random()
-            if random_DS < self.params.DRULE_PROB:
-                self.KB[level]['drules'].append([literal, body])
-            else:
-                self.KB[level]['srules'].append([literal, body])
-
+        self.levels[level] = {'drules': [], 'srules': []}
+        for aux in range(self.params["MIN_ARGSLEVEL"]):
+            head = self.get_new_literal()
+            #rules_head = self.utils.get_randint(1, self.params.MAX_RULESPERHEAD + 1)
+            #self.LITERALS.extend([literal] * (rules_head - 1))
+            body = self.build_body(level, head)
+            self.add_to_kb(level, head, body, 'rnd')
             # To create the defeaters
             #print("Lit: " + literal + " Body: " + str(body)) 
-            self.build_tree(literal, body, level, self.params.TREE_HEIGHT)
-
-            self.COUNT_LIT += 1
+            #self.build_tree(literal, body, level, self.params.TREE_HEIGHT)
 
         # To complete level
-        max_level = self.utils.get_randint(self.params.MIN_ARGSLEVEL, 
-                                            self.params.MAX_ARGSLEVEL + 1)
-        for aux in range(max_level):
-            if len(self.LITERALS) != 0:
-                literal = self.utils.get_choice(self.LITERALS)
-                self.LITERALS.remove(literal)
-                body = self.build_body(level)
-                random_DS = self.utils.get_random()
-                if random_DS < self.params.DRULE_PROB:
-                    self.KB[level]['drules'].append([literal, body])
-                else:
-                    self.KB[level]['srules'].append([literal, body])
-            # To create the defeaters
-            # print("To defeat: ", literal)
-            # build_tree(literal, body, level, TREE_HEIGHT)
-            else:
-                # There are no more pending literals to construct rules
-                index = str(self.COUNT_LIT)
-                polarity = self.utils.get_random()
-                literal = ('~a_' + index if polarity < self.params.NEG_PROB 
-                            else 'a_' + index)
-                rules_head = self.utils.get_randint(1, 
-                                            self.params.MAX_RULESPERHEAD + 1)
-                self.LITERALS.extend([literal] * (rules_head - 1))
-                body = self.build_body(level)
-                random_DS = self.utils.get_random()
-                if random_DS < self.params.DRULE_PROB:
-                    self.KB[level]['drules'].append([literal, body])
-                else:
-                    self.KB[level]['srules'].append([literal, body])
-                # To create the defeaters
-                # print("To defeat: ", literal)
-                # build_tree(literal, body, level, TREE_HEIGHT)
-
-                self.COUNT_LIT += 1
+        #max_level = self.utils.get_randint(self.params.MIN_ARGSLEVEL, 
+        #                                    self.params.MAX_ARGSLEVEL + 1)
+        #for aux in range(max_level - 1):
+        #    if len(self.LITERALS) != 0:
+        #        literal = self.utils.get_choice(self.LITERALS)
+        #        self.LITERALS.remove(literal)
+        #        body = self.build_body(level, literal)
+        #        self.add_to_kb(level, literal, body, 'rnd')
+        #        # To create the defeaters
+        #        # print("To defeat: ", literal)
+        #        # build_tree(literal, body, level, TREE_HEIGHT)
+        #    else:
+        #        # There are no more pending literals to construct rules
+        #        literal = self.get_new_literal()
+        #        rules_head = self.utils.get_randint(1, 
+        #                                    self.params.MAX_RULESPERHEAD + 1)
+        #        self.LITERALS.extend([literal] * (rules_head - 1))
+        #        body = self.build_body(level, literal)
+        #        self.add_to_kb(level, literal, body, 'rnd')
+        #        # To create the defeaters
+        #        # print("To defeat: ", literal)
+        #        # build_tree(literal, body, level, TREE_HEIGHT)
 
 
     def build_tree(self, literal: str, body: list, level: int, height: int) -> None:
@@ -296,10 +405,11 @@ class Generator:
             level: The KB level of the root argument
             height: The hight of the tree to be constructed
         """
-        inners_point = [lit for lit in body if lit not in self.KB_BASE['facts']]
+        inners_point = [lit for lit in body if lit not in self.rules['srules']]
         if len(inners_point) != 0:
             # ramification is the max number of defeater for the actual argument
-            ramification = self.utils.get_randint(1, self.params.RAMIFICATION + 1)
+            # ramification = self.utils.get_randint(1, self.params.RAMIFICATION + 1)
+            ramification = self.params.RAMIFICATION
             if height == 0:
                 # Tree leaves
                 for aux in range(ramification):
@@ -309,16 +419,26 @@ class Generator:
                         inner_point = self.utils.get_choice(inners_point)
                         complement = self.utils.get_complement(inner_point)
                         # defeater_body = build_body(level)
-                        defeater_body = self.build_body_def(len(body))
+                        #defeater_body = self.build_body_def(body, complement, literal)
+                        defeater_body = self.build_body_incremental(body)
                         self.KB[level]['drules'].append([complement, defeater_body])
-                        print("Lit: " + complement + " Body: " + str(defeater_body))
+                        self.rules['drules'].append(complement)
+                        self.utils.print_info('****LEAF-inner*****')
+                        self.utils.print_ok('Defeated Argument: [' + literal + ',' + str(body) + ']')
+                        self.utils.print_ok('By: [' + complement + ',' + str(defeater_body) + ']')
+                        self.utils.print_info('****LEAF*****')
                     else:
                         # Build a defeater for literal
                         complement = self.utils.get_complement(literal)
                         # defeater_body = build_body(level)
-                        defeater_body = self.build_body_def(len(body))
+                        #defeater_body = self.build_body_def(body, complement, literal)
+                        defeater_body = self.build_body_incremental(body)
                         self.KB[level]['drules'].append([complement, defeater_body])
-                        print("Lit: " + complement + " Body: " + str(defeater_body))
+                        self.rules['drules'].append(complement)
+                        self.utils.print_info('****LEAF-conclusion*****')
+                        self.utils.print_ok('Defeated Argument: [' + literal + ',' + str(body) + ']')
+                        self.utils.print_ok('By: [' + complement + ',' + str(defeater_body) + ']')
+                        self.utils.print_info('****LEAF*****')
             else:
                 # Internal levels of the dialectical tree
                 defeaters = []
@@ -330,19 +450,31 @@ class Generator:
                         inner_point = self.utils.get_choice(inners_point)
                         complement = self.utils.get_complement(inner_point)
                         # defeater_body = build_body(level)
-                        defeater_body = self.build_body_def(len(body))
+                        
+                        #defeater_body = self.build_body_def(body, complement, literal)
+                        defeater_body = self.build_body_incremental(body)
                         self.KB[level]['drules'].append([complement, defeater_body])
+                        self.rules['drules'].append(complement)
                         defeaters.append([complement, defeater_body])
-                        print("Lit: " + complement + " Body: " + str(defeater_body))
+                        self.utils.print_info('****INTERNAL-inner*****')
+                        self.utils.print_ok('Defeated Argumenttt: [' + literal + ',' + str(body) + ']')
+                        self.utils.print_ok('By: [' + complement + ',' + str(defeater_body) + ']')
+                        self.utils.print_info('*********')
+
                     else:
                         # Build a defeater for literal
                         # and append in to defeaters list
                         complement = self.utils.get_complement(literal)
                         # defeater_body = build_body(level)
-                        defeater_body = self.build_body_def(len(body))
+                        #defeater_body = self.build_body_def(body, complement, literal)
+                        defeater_body = self.build_body_incremental(body)
                         self.KB[level]['drules'].append([complement, defeater_body])
+                        self.rules['drules'].append(complement)
                         defeaters.append([complement, defeater_body])
-                        print("Lit: " + complement + " Body: " + str(defeater_body))
+                        self.utils.print_info('****INTERNAL-conclusion*****')
+                        self.utils.print_ok('Defeated Argument: [' + literal + ',' + str(body) + ']')
+                        self.utils.print_ok('By: [' + complement + ',' + str(defeater_body) + ']')
+                        self.utils.print_info('*********')
                 for defeater in defeaters:
                     self.build_tree(defeater[0], defeater[1], level, height - 1)
         else:
@@ -353,25 +485,16 @@ class Generator:
         """
         Build the KB Base (facts and presumptions only)
         """
-        global COUNT_LIT, KB
-        self.KB[0] = {'drules': [], 'srules': []}
-        for i in range(self.params.KBBASE_SIZE):
+        self.levels[0] = {'drules': [], 'srules': []}
+        for i in range(self.params["KBBASE_SIZE"]):
             random_FP = self.utils.get_random()
-            polarity = self.utils.get_random()
-
-            index = str(self.COUNT_LIT)
-            literal = ('~a_' + index if polarity < self.params.NEG_PROB else 
-                                        'a_' + index)
-            if random_FP < self.params.FACT_PROB:
+            literal = self.get_new_literal()
+            if random_FP < self.params["FACT_PROB"]:
                 # New Fact
-                self.KB_BASE['facts'].append(literal)
-                self.KB[0]['srules'].append([literal, ['true']])
+                self.levels[0]['srules'].append([literal, ('true',)])
             else:
                 # New Presumption
-                self.KB_BASE['presumptions'].append(literal)
-                self.KB[0]['drules'].append([literal, ['true']])
-
-            self.COUNT_LIT += 1
+                self.levels[0]['drules'].append([literal, ('true',)])
 
 
     def build_kb(self, level: int) -> None:
@@ -395,8 +518,9 @@ class Generator:
         """
         
         program = []
-        to_string = ''
-        for key, value in self.KB.items():
+        to_string = 'use_criterion(' + self.params["PREF_CRITERION"] +').'
+        program.append('')
+        for key, value in self.levels.items():
             kb_level = str(key)
             program.append('/*** KB LEVEL = ' + kb_level + ' ***/')
             for drule in value['drules']:
@@ -423,8 +547,8 @@ class Generator:
         if hyperparams != 'undefined':
             self.define_hyperparams(hyperparams)
         
-        for id_program in range(self.params.N_PROGRAMS):
+        for id_program in range(self.params["N_PROGRAMS"]):
             self.clear_datastructures()
             self.build_kb_base()
-            self.build_kb(self.params.LEVELS)
-            self.to_delp_format(result_path, id_program) 
+            self.build_kb(self.params["LEVELS"])
+            self.to_delp_format(result_path, id_program)
