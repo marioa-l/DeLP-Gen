@@ -138,3 +138,15 @@ class Utils:
             return literal.replace('~', '')
         else:
             return '~' + literal
+
+
+    def pretty(self, d, indent=0) -> None:
+        """
+        To print a dect object
+        """
+        for key, value in d.items():
+            print('\t' * indent + str(key))
+            if isinstance(value, dict):
+                self.pretty(value, indent+1)
+            else:
+                print('\t' * (indent+1) + str(value))

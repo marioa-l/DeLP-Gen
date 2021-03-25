@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
 from utils import *
+import json
 
 """
 Hyperparams
@@ -75,7 +76,6 @@ class Generator:
                 "MAX_RULESPERHEAD": 1,
                 "MAX_BODYSIZE": 1,
                 "MIN_ARGSLEVEL": 1,
-                "MAX_ARGSLEVEL": 1,
                 "LEVELS": 1,
                 "RAMIFICATION": 1,
                 "TREE_HEIGHT": 1,
@@ -87,13 +87,10 @@ class Generator:
         """
         Global values and auxiliar structures
         """
-        # List to control rules defining the same literal
-        # [Literal] = Literal to define one rule
-        self.LITERALS = []
         # Index of literals
         self.COUNT_LIT = 0
         # Used rules
-        self.USED_HEADS = []
+        self.USED_HEADS = ()
         """"""
         
         """
@@ -146,8 +143,8 @@ class Generator:
         Args:
             -head: A literal (the head of the stric rule)
             -body: A list of literals (the body of the strict rule)
-        """
-        if isinstance(body, tuple):
+        """ 
+        if isinstance(body[0], str):
             # Is fact
             body_string = 'true'
         else:
@@ -165,7 +162,7 @@ class Generator:
             -head: A literal (the head of the defeasible rule)
             -body: A list of literals (the body of the defeasible rule)
         """
-        if isinstance(body, tuple):
+        if isinstance(body[0], str):
             # Is fact
             body_string = 'true'
         else:
@@ -200,13 +197,13 @@ class Generator:
         if type == 'rnd':
             random_DS = self.utils.get_random()
             if random_DS < self.params["DRULE_PROB"]:
-                self.levels[level]['drules'].append([head, body])
+                self.levels[level]['drules'].append((head, body))
                 self.rules['drules'].append(head)
             else:
-                self.levels[level]['srules'].append([head, body])
+                self.levels[level]['srules'].append((head, body))
                 self.rules['srules'].append(head)
         else:
-            self.levels[level][type].append([head, body])
+            self.levels[level][type].append((head, body))
             self.rules[type].append(head)
 
 
@@ -222,13 +219,13 @@ class Generator:
                 --level: Level of the rule
                 --pos: Index of the rule in the level <level>
         """
+        #self.utils.print_info(str(self.USED_HEADS))
         possibles_drules = [index for index, drule in 
                                     enumerate(self.levels[level]["drules"]) if 
                                     drule[0] not in self.USED_HEADS]
         possibles_srules = [index for index, srule in 
                                     enumerate(self.levels[level]["srules"]) if 
-                                    srule[0] not in self.USED_HEADS]
-    
+                                    srule[0] not in self.USED_HEADS]   
         random_DS = self.utils.get_random()
         if random_DS < self.params["DRULE_PROB"]:
             if len(possibles_drules) != 0:
@@ -237,7 +234,10 @@ class Generator:
                 rule = ('drules', level, index_drule)
             else:
                 # Build a drule and put into the level <level>?
-                pass
+                #self.utils.print_error("No more drules!")
+                lit = self.get_new_literal()
+                self.levels[0]['drules'].append((lit, ('true',)))
+                rule = ('drules', 0, len(self.levels[0]['drules']) - 1)
         else:
             if len(possibles_srules) != 0:
                 # Take a srule (its position) from level <level>
@@ -245,8 +245,11 @@ class Generator:
                 rule = ('srules', level, index_srule)
             else:
                 # Build a srule and put into the level <level>?
-                pass
-        
+                #self.utils.print_error("No more srules!")
+                lit = self.get_new_literal()
+                self.levels[0]['srules'].append((lit, ('true',)))
+                rule = ('srules', 0, len(self.levels[0]['srules']) - 1)
+        #self.utils.print_error(str(rule))
         return rule
 
 
@@ -259,18 +262,23 @@ class Generator:
             -conclusion: The conclusion of the argument for which we are 
             creating a body
         """
-        body = []
-
-        self.USED_HEADS.append(conclusion)
-        self.USED_HEADS.append(self.utils.get_complement(conclusion))
+        body = ()
+        
+        self.USED_HEADS = self.USED_HEADS + (conclusion,)
+        self.USED_HEADS = self.USED_HEADS + (self.utils.get_complement(conclusion),)
 
         body_size = self.utils.get_randint(1, self.params["MAX_BODYSIZE"])
-        rule = self.get_one_rule_level(level - 1) 
-        body.append(rule)
+        rule = self.get_one_rule_level(level - 1)
+        self.USED_HEADS = self.USED_HEADS + (self.levels[rule[1]][rule[0]][rule[2]][0],)
+        body = body + (rule,)
+
         for aux in range(body_size - 1):
-            body.append(self.get_one_rule_all_levels(level - 1, body, literal))
+            select_level = self.utils.get_choice(level)
+            new_rule = self.get_one_rule_level(select_level)
+            self.USED_HEADS = self.USED_HEADS + (self.levels[new_rule[1]][new_rule[0]][new_rule[2]][0],)
+            body = body + (new_rule,) 
         
-        self.USED_HEADS = []
+        self.USED_HEADS = ()
         return body
 
 
@@ -352,48 +360,41 @@ class Generator:
                 self.rules['srules'].append(literal)
                 defeater_body.append(literal)
             return defeater_body
+    
+
+    def clean_level(self, level: int) -> None:
+        """
+        Delte all duplicate in level <level>
+        Args:
+            -level: The level to clean
+        """
+        self.levels[level]['drules'] = list(set(self.levels[level]['drules']))
+        self.levels[level]['srules'] = list(set(self.levels[level]['srules']))
 
 
     def build_arguments(self, level: int) -> None:
-        """
+        """"
         Build all arguments for a particular level
         Args:
             -level: A KB level
         """
+        # To save all arguments in this level
         self.levels[level] = {'drules': [], 'srules': []}
-        for aux in range(self.params["MIN_ARGSLEVEL"]):
-            head = self.get_new_literal()
-            #rules_head = self.utils.get_randint(1, self.params.MAX_RULESPERHEAD + 1)
-            #self.LITERALS.extend([literal] * (rules_head - 1))
-            body = self.build_body(level, head)
-            self.add_to_kb(level, head, body, 'rnd')
-            # To create the defeaters
-            #print("Lit: " + literal + " Body: " + str(body)) 
-            #self.build_tree(literal, body, level, self.params.TREE_HEIGHT)
+        # Min number of different argumens in the level
+        min_args = self.params["MIN_ARGSLEVEL"]
 
-        # To complete level
-        #max_level = self.utils.get_randint(self.params.MIN_ARGSLEVEL, 
-        #                                    self.params.MAX_ARGSLEVEL + 1)
-        #for aux in range(max_level - 1):
-        #    if len(self.LITERALS) != 0:
-        #        literal = self.utils.get_choice(self.LITERALS)
-        #        self.LITERALS.remove(literal)
-        #        body = self.build_body(level, literal)
-        #        self.add_to_kb(level, literal, body, 'rnd')
-        #        # To create the defeaters
-        #        # print("To defeat: ", literal)
-        #        # build_tree(literal, body, level, TREE_HEIGHT)
-        #    else:
-        #        # There are no more pending literals to construct rules
-        #        literal = self.get_new_literal()
-        #        rules_head = self.utils.get_randint(1, 
-        #                                    self.params.MAX_RULESPERHEAD + 1)
-        #        self.LITERALS.extend([literal] * (rules_head - 1))
-        #        body = self.build_body(level, literal)
-        #        self.add_to_kb(level, literal, body, 'rnd')
-        #        # To create the defeaters
-        #        # print("To defeat: ", literal)
-        #        # build_tree(literal, body, level, TREE_HEIGHT)
+        for i_aux in range(min_args):
+            # Generate a new head (conclusion)
+            head = self.get_new_literal()
+            # To define how many arguments with the same head to create
+            args_head = self.utils.get_randint(1, self.params["MAX_RULESPERHEAD"])
+            # Build all arguments for <head>
+            for j_aux in range(args_head):
+                # Generete the body of the argument
+                body = self.build_body(level, head)
+                # Add to the KB
+                self.add_to_kb(level, head, body, 'rnd') 
+        self.clean_level(level)
 
 
     def build_tree(self, literal: str, body: list, level: int, height: int) -> None:
@@ -491,10 +492,10 @@ class Generator:
             literal = self.get_new_literal()
             if random_FP < self.params["FACT_PROB"]:
                 # New Fact
-                self.levels[0]['srules'].append([literal, ('true',)])
+                self.levels[0]['srules'].append((literal, ('true',)))
             else:
                 # New Presumption
-                self.levels[0]['drules'].append([literal, ('true',)])
+                self.levels[0]['drules'].append((literal, ('true',)))
 
 
     def build_kb(self, level: int) -> None:
@@ -515,8 +516,7 @@ class Generator:
         Save the delp program
         Args:
             result_path: The path for save the program
-        """
-        
+        """ 
         program = []
         to_string = 'use_criterion(' + self.params["PREF_CRITERION"] +').'
         program.append('')
@@ -525,10 +525,12 @@ class Generator:
             program.append('/*** KB LEVEL = ' + kb_level + ' ***/')
             for drule in value['drules']:
                 rule = self.create_def_rule(drule[0], drule[1])
-                program.append(rule)
+                if rule not in program:
+                    program.append(rule)
             for srule in value['srules']:
                 rule = self.create_strict_rule(srule[0], srule[1])
-                program.append(rule)
+                if rule not in program:
+                    program.append(rule)
 
         for rule in program:
             to_string += rule + '\n'
@@ -551,4 +553,4 @@ class Generator:
             self.clear_datastructures()
             self.build_kb_base()
             self.build_kb(self.params["LEVELS"])
-            self.to_delp_format(result_path, id_program)
+            self.to_delp_format(result_path, id_program) 
