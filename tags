@@ -24,10 +24,11 @@ __init__	utils.py	/^    def __init__(self):$/;"	m	class:Utils
 add_to_kb	generator.py	/^    def add_to_kb(self, level: int, head: str, body: list, type: str) -> None:$/;"	m	class:Generator
 analyze_results	delpMetrics.py	/^    def analyze_results(self, result):$/;"	m	class:ComputeMetrics
 bcolors	utils.py	/^class bcolors:$/;"	c
+build_actsets_ntactsets	generator.py	/^    def build_actsets_ntactsets(self, complete_argument: list) -> dict:$/;"	m	class:Generator
 build_arguments	generator.py	/^    def build_arguments(self, level: int) -> None:$/;"	m	class:Generator
 build_body	generator.py	/^    def build_body(self, level: int, conclusion: str) -> list:$/;"	m	class:Generator
-build_body_def	generator.py	/^    def build_body_def(self, defeated_body: list, defeated_lit: str, head: str) -> list:$/;"	m	class:Generator
-build_body_incremental	generator.py	/^    def build_body_incremental(self, defeated_body: list) -> list:$/;"	m	class:Generator
+build_complete_arguments	generator.py	/^    def build_complete_arguments(self, argument: list, tipo: str):$/;"	m	class:Generator
+build_dialectical_trees	generator.py	/^    def build_dialectical_trees(self) -> None:$/;"	m	class:Generator
 build_kb	generator.py	/^    def build_kb(self, level: int) -> None:$/;"	m	class:Generator
 build_kb_base	generator.py	/^    def build_kb_base(self) -> None:$/;"	m	class:Generator
 build_path_result	delpMetrics.py	/^    def build_path_result(self) -> str:$/;"	m	class:ComputeMetrics
