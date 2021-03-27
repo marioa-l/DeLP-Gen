@@ -361,7 +361,26 @@ class Generator:
             return []  
 
 
-    def build_actsets_ntactsets(self, complete_argument: list) -> dict:
+    def find_in_completearg(self, conclusion: str, complete_argument: list) -> list:
+        """
+        Find and return the body literals of a rule in a complete argument
+        with conclusion <conclusion> and its type (drule o srule)
+        Args:
+            -conclusion: The conclusions of argument
+            -complete_argument: The complete argument
+        Output:
+            -[body_literals, tipo]:
+                --body_literals: The literals of the body
+                --tipo: 'drule' or 'srule'
+        """
+        try:
+            rule = next(rule for rule in complete_argument if rule[0] == conclusion) 
+            literals_tipo = [set(rule[2]), rule[1]]
+            return literals_tipo
+        except StopIteration:
+            return [set(),''] # Facts or Presumptions
+
+    def build_actsets_ntactsets(self, complete_argument: list, conclusion: str) -> dict:
         """
         Compute the Act-sets and NTAct-sets of the argument <complete_argument>
         Args:
@@ -373,31 +392,57 @@ class Generator:
                 'ntact_sets': set
             }
         """
-        c = [[{conclusion,'a','b'}, 'trivial']]
-        act_sets = {}
-        ntact_sets = {}
-
+        c = [[{conclusion}, 'trivial']]
+        act_sets = []
+        ntact_sets = []
+        exp_sets = []
         while True:
             [conj, tipo] = c.pop(0)
-            for element in conj:
-                rule = 'a' 
+            for lit in conj:
+                [new_actset, type_rule] = self.find_in_completearg(lit, complete_argument)
+                if len(new_actset) != 0:
+                    if tipo == 'trivial' and type_rule == 'srule':
+                        # The new act set is 'trivial'
+                        type_new_actset = 'trivial'
+                    else:
+                        # The new act set is 'no trivial'
+                        type_new_actset = 'no trivial'
+                    if new_actset not in exp_sets:
+                        c.append([new_actset, type_new_actset])
+            act_sets.append(conj)
+            if tipo == 'no trivial':
+                ntact_sets.append(conj)
+            exp_sets.append(conj)
             if len(c) == 0:
-                print("FIN")
                 break
+        return {
+                'act_sets': act_sets,
+                'ntact_sets': ntact_sets
+                }
     
     def build_dialectical_trees(self) -> None:
         """
         To build all dialectical trees for each arguments
-        """
-        print(self.levels)
+        """ 
         for level, rules in self.levels.items():
-            arguments = rules["drules"] + rules["srules"]
-            for argument in arguments:
+            d_arguments = rules["drules"]
+            s_arguments = rules["srules"]
+            self.utils.print_info("D Arguments: ") 
+            for argument in d_arguments:
                 argument = [rule for rule in argument if not isinstance(argument[1][0], str)]
                 if len(argument) != 0:
+                    self.utils.print_ok(argument)
                     complete_argument = self.build_complete_arguments(argument, 'drules')
-                    #ntact_set = self.get_body_literals(arg[1])
-                    #self.utils.print_ok("Head: " + arg[0] + "NTAct_set: " + str(ntact_set))
+                    act_ntact_sets = self.build_actsets_ntactsets(complete_argument, argument[0])
+                    self.utils.pretty(act_ntact_sets, indent=1)
+            self.utils.print_info("S Arguments: ")
+            for argument in s_arguments:
+                argument = [rule for rule in argument if not isinstance(argument[1][0], str)]
+                if len(argument) != 0:
+                    self.utils.print_ok(argument)
+                    complete_argument = self.build_complete_arguments(argument, 'srules')
+                    act_ntact_sets = self.build_actsets_ntactsets(complete_argument, argument[0])
+                    self.utils.pretty(act_ntact_sets, indent=1) 
 
 
     def build_tree(self, literal: str, body: list, level: int, height: int) -> None:

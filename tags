@@ -24,7 +24,7 @@ __init__	utils.py	/^    def __init__(self):$/;"	m	class:Utils
 add_to_kb	generator.py	/^    def add_to_kb(self, level: int, head: str, body: list, type: str) -> None:$/;"	m	class:Generator
 analyze_results	delpMetrics.py	/^    def analyze_results(self, result):$/;"	m	class:ComputeMetrics
 bcolors	utils.py	/^class bcolors:$/;"	c
-build_actsets_ntactsets	generator.py	/^    def build_actsets_ntactsets(self, complete_argument: list) -> dict:$/;"	m	class:Generator
+build_actsets_ntactsets	generator.py	/^    def build_actsets_ntactsets(self, complete_argument: list, conclusion: str) -> dict:$/;"	m	class:Generator
 build_arguments	generator.py	/^    def build_arguments(self, level: int) -> None:$/;"	m	class:Generator
 build_body	generator.py	/^    def build_body(self, level: int, conclusion: str) -> list:$/;"	m	class:Generator
 build_complete_arguments	generator.py	/^    def build_complete_arguments(self, argument: list, tipo: str):$/;"	m	class:Generator
@@ -47,6 +47,7 @@ delp_prueba	delpMetrics.py	/^delp_prueba = "\/mnt\/dat\/projects\/programs\/prop
 delp_prueba2	delpMetrics.py	/^delp_prueba2 = "\/mnt\/dat\/projects\/programs\/propio\/delpINT.delp"$/;"	v
 drule_symbol	generator.py	/^    drule_symbol = '-<'$/;"	v	class:Generator
 experiment	delpMetrics.py	/^experiment = ComputeMetrics($/;"	v
+find_in_completearg	generator.py	/^    def find_in_completearg(self, conclusion: str, complete_argument: list) -> list:$/;"	m	class:Generator
 generate	generator.py	/^    def generate(self, result_path: str, hyperparams = 'undefined') -> None:$/;"	m	class:Generator
 generator	tests.py	/^    generator = Generator()$/;"	v	class:Test
 get_body_literals	generator.py	/^    def get_body_literals(self, body: list) -> list:$/;"	m	class:Generator
