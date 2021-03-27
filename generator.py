@@ -395,9 +395,7 @@ class Generator:
             for argument in arguments:
                 argument = [rule for rule in argument if not isinstance(argument[1][0], str)]
                 if len(argument) != 0:
-                    self.utils.print_error(argument)
                     complete_argument = self.build_complete_arguments(argument, 'drules')
-                    self.utils.print_error(complete_argument)
                     #ntact_set = self.get_body_literals(arg[1])
                     #self.utils.print_ok("Head: " + arg[0] + "NTAct_set: " + str(ntact_set))
 
