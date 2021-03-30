@@ -24,15 +24,16 @@ __init__	utils.py	/^    def __init__(self):$/;"	m	class:Utils
 add_to_kb	generator.py	/^    def add_to_kb(self, level: int, head: str, body: list, type: str) -> None:$/;"	m	class:Generator
 analyze_results	delpMetrics.py	/^    def analyze_results(self, result):$/;"	m	class:ComputeMetrics
 bcolors	utils.py	/^class bcolors:$/;"	c
-build_actsets_ntactsets	generator.py	/^    def build_actsets_ntactsets(self, complete_argument: list, conclusion: str) -> dict:$/;"	m	class:Generator
+build_actntactsets	generator.py	/^    def build_actntactsets(self, conclusion: str, complete_argument: list) -> dict:$/;"	m	class:Generator
 build_arguments	generator.py	/^    def build_arguments(self, level: int) -> None:$/;"	m	class:Generator
 build_body	generator.py	/^    def build_body(self, level: int, conclusion: str) -> list:$/;"	m	class:Generator
-build_complete_arguments	generator.py	/^    def build_complete_arguments(self, argument: list, tipo: str):$/;"	m	class:Generator
+build_complete_arguments	generator.py	/^    def build_complete_arguments(self, argument: list, tipo: str) -> list:$/;"	m	class:Generator
+build_defeater	generator.py	/^    def build_defeater(self, head: str, ntact_sets: list, tipo: str) -> list:$/;"	m	class:Generator
 build_dialectical_trees	generator.py	/^    def build_dialectical_trees(self) -> None:$/;"	m	class:Generator
 build_kb	generator.py	/^    def build_kb(self, level: int) -> None:$/;"	m	class:Generator
 build_kb_base	generator.py	/^    def build_kb_base(self) -> None:$/;"	m	class:Generator
 build_path_result	delpMetrics.py	/^    def build_path_result(self) -> str:$/;"	m	class:ComputeMetrics
-build_tree	generator.py	/^    def build_tree(self, literal: str, body: list, level: int, height: int) -> None:$/;"	m	class:Generator
+build_tree	generator.py	/^    def build_tree(self, head: str, ntact_sets: list, height: int, ram: int) -> None:$/;"	m	class:Generator
 clean_level	generator.py	/^    def clean_level(self, level: int) -> None:$/;"	m	class:Generator
 clear_datastructures	generator.py	/^    def clear_datastructures(self) -> None:$/;"	m	class:Generator
 compute_dataset	delpMetrics.py	/^    def compute_dataset(self, dataset_length):$/;"	m	class:ComputeMetrics
@@ -47,13 +48,14 @@ delp_prueba	delpMetrics.py	/^delp_prueba = "\/mnt\/dat\/projects\/programs\/prop
 delp_prueba2	delpMetrics.py	/^delp_prueba2 = "\/mnt\/dat\/projects\/programs\/propio\/delpINT.delp"$/;"	v
 drule_symbol	generator.py	/^    drule_symbol = '-<'$/;"	v	class:Generator
 experiment	delpMetrics.py	/^experiment = ComputeMetrics($/;"	v
-find_in_completearg	generator.py	/^    def find_in_completearg(self, conclusion: str, complete_argument: list) -> list:$/;"	m	class:Generator
+find_rule	generator.py	/^    def find_rule(self, conclusion: str, complete_argument: list) -> list:$/;"	m	class:Generator
 generate	generator.py	/^    def generate(self, result_path: str, hyperparams = 'undefined') -> None:$/;"	m	class:Generator
 generator	tests.py	/^    generator = Generator()$/;"	v	class:Test
 get_body_literals	generator.py	/^    def get_body_literals(self, body: list) -> list:$/;"	m	class:Generator
 get_choice	utils.py	/^    def get_choice(self, choices: Union[int, list]):$/;"	m	class:Utils
 get_complement	utils.py	/^    def get_complement(self, literal: str) -> str:$/;"	m	class:Utils
 get_data_from_file	utils.py	/^    def get_data_from_file(self, path_file: str) -> json:$/;"	m	class:Utils
+get_head	generator.py	/^    def get_head(self, level: int, tipo: str, pos: int) -> str:$/;"	m	class:Generator
 get_new_id	generator.py	/^    def get_new_id(self) -> str:$/;"	m	class:Generator
 get_new_literal	generator.py	/^    def get_new_literal(self) -> str:$/;"	m	class:Generator
 get_one_rule_level	generator.py	/^    def get_one_rule_level(self, level: int) -> tuple:$/;"	m	class:Generator

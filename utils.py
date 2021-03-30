@@ -112,6 +112,11 @@ class Utils:
         Args:
             -choices: List of elements or an int
         """
+        if isinstance(choices, list):
+            if len(choices) == 1:
+                return choices[0]
+            else:
+                return np.random.choice(choices, 1)[0]
         return np.random.choice(choices, 1)[0]
 
 
