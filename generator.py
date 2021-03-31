@@ -88,6 +88,8 @@ class Generator:
         self.COUNT_LIT = 0
         # Used heads 
         self.USED_HEADS = ()
+        # Used for control of defeaters building
+        self.USED_NTACTSETS = []
         """"""
         
         """
@@ -439,12 +441,48 @@ class Generator:
                 }
 
 
+    def is_defeasible(self, complete_argument: list) -> bool:
+        """
+        Determine if an argument is defeasible or not
+        Args:
+            -complete_argument: The complete argument
+        """ 
+        try:
+            next(rule for rule in complete_argument if rule[1] == 'drules')
+            return True
+        except StopIteration:
+            return False
+
+
     def build_defeater(self, head: str, ntact_sets: list, tipo: str) -> list:
-        ntact_def = self.utils.get_choice(ntact_sets)
-        body_def = list(ntact_def)
-        head_def = self.utils.get_complement(head)
-        self.add_to_kb(self.params["LEVELS"] + 1, head_def, body_def, 'drules')
-        return [head_def, body_def]
+        if len(ntact_sets) != 0 and ntact_sets[0] != '':
+            #possibles_ntact = [ntact for ntact in ntact_sets if 
+            #        ntact not in self.USED_NTACTSETS]
+            #
+            #if len(possibles_ntact) != 0:
+            #    # Choice from ntactsets of the defeated argument (for 'blocking')
+            #    ntact_def = self.utils.get_choice(ntact_sets)
+            #else:
+            #    # Build new ntactset for the defeater's body? (proper)
+            #    new_def_lit = self.get_new_literal().replace('a','d')
+            #    self.add_to_kb(0,new_def_lit, ('true',),'drules')
+            #    ntact_def = copy.copy(self.utils.get_choice(ntact_sets))
+            #    ntact_def.add(new_def_lit) 
+            new_def_lit = self.get_new_literal().replace('a','d')
+            self.add_to_kb(0,new_def_lit, ('true',),'drules')
+            ntact_def = copy.copy(self.utils.get_choice(ntact_sets))
+            ntact_def.add(new_def_lit)
+
+
+
+            body_def = list(ntact_def)
+            head_def = self.utils.get_complement(head)
+            self.add_to_kb(self.params["LEVELS"] + 1, head_def, body_def, 'drules')
+            self.USED_NTACTSETS.append(ntact_def)
+            return [head_def, [ntact_def]]
+        else:
+            # Argument without ntactsets (the base of the KB)
+            return []
 
         
     def build_dialectical_trees(self) -> None:
@@ -456,11 +494,12 @@ class Generator:
         tree_height = self.params["TREE_HEIGHT"]
         ramification = self.params["RAMIFICATION"]
         for tipo, args in self.levels[self.params["LEVELS"]].items():
-            for argument in args:
-                complete_arg = self.build_complete_arguments(argument, tipo) 
-                actntact_sets = self.build_actntactsets(argument[0], complete_arg)
-                self.build_tree(argument[0], act_ntact_sets["ntact_sets"],
-                                                    tree_height, ramification)
+            for argument in args: 
+                complete_arg = self.build_complete_arguments(argument, tipo)
+                if self.is_defeasible(complete_arg):
+                    actntact_sets = self.build_actntactsets(argument[0], complete_arg)
+                    self.build_tree(argument[0], actntact_sets["ntact_sets"],
+                                                    tree_height, ramification) 
 
     def build_tree(self, head: str, ntact_sets: list, height: int, ram: int) -> None:
         """
@@ -474,17 +513,19 @@ class Generator:
         """
         if height == 1:
             # Build the leaves of the tree
-            for aux in range(ramification):
+            for aux in range(ram):
                 self.build_defeater(head, ntact_sets, 'blocking')
         else:
             # Internal levels of the dialectical tree
             defeaters = []
-            for aux in range(ramification):
-                defeater = self.build_defeater(root_conclusion, ntact_sets, 'blocking') 
+            for aux in range(ram):
+                defeater = self.build_defeater(head, ntact_sets, 'blocking') 
                 defeaters.append(defeater)
-                    
+            self.USED_NTACTSETS = []       
             for defeater in defeaters:
-                self.build_tree(defeater[0], [defeater[1]], height - 1, ram = self.utils.get_randint(1, ram))
+                if len(defeater) != 0: 
+                    ram = self.utils.get_randint(1, ram)
+                    self.build_tree(defeater[0], defeater[1], height - 1, ram)
 
 
     def build_kb_base(self) -> None:

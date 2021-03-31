@@ -87,6 +87,7 @@ class Utils:
         def_rules = sum(data['def_rules']) / len(data['def_rules'])
         arg_lines = sum(data['arg_lines']) / len(data['arg_lines']) 
         height_lines = sum(data['height_lines']) / len(data['height_lines'])
+        self.print_ok(sum(data['height_lines']))
         # Argument | MDDL | H | T    
         to_write = ('\n'
                     + self.to_string_decimal_format(arguments)

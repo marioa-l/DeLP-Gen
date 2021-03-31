@@ -31,10 +31,10 @@ class ComputeMetrics:
         """
         Show experiment settings
         """
-        self.utils.print_msj("INFO", "Output path: " + self.path_file_results)
-        self.utils.print_msj("INFO", "Result file: " + self.file_results_name)
-        self.utils.print_msj("INFO", "Dataset: " + self.path_dataset)
-        self.utils.print_msj("INFO", "Delp program: " + self.path_delp)
+        self.utils.print_info("Output path: " + self.path_file_results)
+        self.utils.print_info("Result file: " + self.file_results_name)
+        self.utils.print_info("Dataset: " + self.path_dataset)
+        self.utils.print_info("Delp program: " + self.path_delp)
 
 
     def build_path_result(self) -> str:
@@ -227,19 +227,19 @@ class ComputeMetrics:
 
 # Programs and dataset for test
 dataset = "/mnt/dat/projects/programs/propio/test/lines/"
-delp = "/mnt/dat/projects/programs/propio/altura/delp9.delp"
+delp = "/mnt/dat/projects/programs/propio/test/lines/delp0.delp"
 delp_prueba = "/mnt/dat/projects/programs/propio/test_delp.delp"
 delp_prueba2 = "/mnt/dat/projects/programs/propio/delpINT.delp"
 # Main
 experiment = ComputeMetrics(
         './', # Path for result
-        'salidaLines0', # Result file name
+        'salida0', # Result file name
         dataset,
-        delp_prueba2) # DeLP)
+        delp) # DeLP)
 
 experiment.show_setting()
 
 #experiment.main(500, experiment.build_path_result())
-experiment.compute_one()
-#experiment.compute_dataset(50)
-#experiment.utils.write_metrics(experiment.build_path_result())
+#experiment.compute_one()
+experiment.compute_dataset(100)
+experiment.utils.write_metrics(experiment.build_path_result())
