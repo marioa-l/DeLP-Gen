@@ -1,5 +1,6 @@
 import json
 import sys
+import time
 from progress.spinner import Spinner
 from subprocess import STDOUT, check_output
 from utils import *
@@ -24,6 +25,7 @@ class ComputeMetrics:
         self.path_delp = path_delp
         self.aux_height = []
         self.utils = Utils()
+        self.times = []
         #self.patter_presumption = \[\([a-zA-Z]*\-\<[t|T]rue\)\]
 
 
@@ -43,7 +45,27 @@ class ComputeMetrics:
         """
         return self.path_file_results + self.file_results_name + '.json'
 
-    
+
+    def query_literal_solver(self, literal: str) -> None:
+        """
+        Call to delp solver to query for one literal
+        Args:
+            -literal: The literal to consult
+        """
+        delpProgram = self.path_delp
+        cmd = ['./globalCore', 'file', delpProgram, 'answ', literal]
+        
+        try:
+            output = check_output(cmd, stderr=STDOUT, timeout=60). \
+                decode(sys.stdout.encoding)
+            result = output
+            return result
+        except Exception as e:
+            print(e)
+            exit()
+            return "Error"
+
+
     def query_delp_solver(self) -> json:
         """
         Call to delp solver to get all answers for the delp program
@@ -52,7 +74,7 @@ class ComputeMetrics:
         delpProgram = self.path_delp
         cmd = ['./globalCore', 'file', delpProgram, 'all']
         try:
-            output = check_output(cmd, stderr=STDOUT, timeout=4). \
+            output = check_output(cmd, stderr=STDOUT, timeout=60). \
                 decode(sys.stdout.encoding)
             result = json.loads(output)
             return result
@@ -151,7 +173,11 @@ class ComputeMetrics:
 
 
     def load(self, filePath):
+        initial_time = time.time()
         core_response = self.query_delp_solver()
+        end_time = time.time()
+        query_time = end_time - initial_time
+        self.times.append(query_time)
         if core_response != "Error":
             result = self.analyze_results(core_response)
             return result
@@ -213,33 +239,25 @@ class ComputeMetrics:
             arg_lines.append(data['avg_arg_lines'])
             height_lines.append(data['avg_height_lines'])
             spinner.next()
+        
+        metric_args = sum(arguments) / len(arguments)
+        mddl = sum(def_rules) / len(def_rules)
+        t = sum(arg_lines) / len(arg_lines) 
+        h = sum(height_lines) / len(height_lines)
+        min_time = min(self.times)
+        max_time = max(self.times)
+        mean_time = sum(self.times) / len(self.times)
 
         results = {
-            'arguments': arguments,
-            'defeaters': defeaters,
-            'def_rules': def_rules,
-            'arg_lines': arg_lines,
-            'height_lines': height_lines
+            'arguments': metric_args,
+            'mddl': mddl,
+            't': t,
+            'h': h,
+            'times':{
+                    'min': float('{:0.4f}'.format(min_time)),
+                    'max': float('{:0.4f}'.format(max_time)),
+                    'mean': float('{:0.4f}'.format(mean_time))
+                } 
         }
 
         self.utils.write_result(self.build_path_result(), results)
-
-
-# Programs and dataset for test
-dataset = "/mnt/dat/projects/programs/propio/test/lines/"
-delp = "/mnt/dat/projects/programs/propio/test/lines/delp0.delp"
-delp_prueba = "/mnt/dat/projects/programs/propio/test_delp.delp"
-delp_prueba2 = "/mnt/dat/projects/programs/propio/delpINT.delp"
-# Main
-experiment = ComputeMetrics(
-        './', # Path for result
-        'salida0', # Result file name
-        dataset,
-        delp) # DeLP)
-
-experiment.show_setting()
-
-#experiment.main(500, experiment.build_path_result())
-#experiment.compute_one()
-experiment.compute_dataset(100)
-experiment.utils.write_metrics(experiment.build_path_result())

@@ -36,21 +36,17 @@ build_path_result	delpMetrics.py	/^    def build_path_result(self) -> str:$/;"	m
 build_tree	generator.py	/^    def build_tree(self, head: str, ntact_sets: list, height: int, ram: int) -> None:$/;"	m	class:Generator
 clean_level	generator.py	/^    def clean_level(self, level: int) -> None:$/;"	m	class:Generator
 clear_datastructures	generator.py	/^    def clear_datastructures(self) -> None:$/;"	m	class:Generator
+complex_test_path	tests.py	/^complex_test_path = "\/mnt\/dat\/projects\/programs\/delp-gen\/complex\/"$/;"	v
 compute_dataset	delpMetrics.py	/^    def compute_dataset(self, dataset_length):$/;"	m	class:ComputeMetrics
 compute_one	delpMetrics.py	/^    def compute_one(self) -> None:$/;"	m	class:ComputeMetrics
 count_lines	delpMetrics.py	/^    def count_lines(self, root: int, lines: list, level=0) -> int:$/;"	m	class:ComputeMetrics
 create_def_rule	generator.py	/^    def create_def_rule(self, head: str, body: Union[list, tuple]) -> str:$/;"	m	class:Generator
 create_strict_rule	generator.py	/^    def create_strict_rule(self, head: str, body: Union[list,tuple]) -> str:$/;"	m	class:Generator
-dataset	delpMetrics.py	/^dataset = "\/mnt\/dat\/projects\/programs\/propio\/test\/lines\/"$/;"	v
 define_hyperparams	generator.py	/^    def define_hyperparams(self, hyperparams: dict) -> None:$/;"	m	class:Generator
-delp	delpMetrics.py	/^delp = "\/mnt\/dat\/projects\/programs\/propio\/test\/lines\/delp0.delp"$/;"	v
-delp_prueba	delpMetrics.py	/^delp_prueba = "\/mnt\/dat\/projects\/programs\/propio\/test_delp.delp"$/;"	v
-delp_prueba2	delpMetrics.py	/^delp_prueba2 = "\/mnt\/dat\/projects\/programs\/propio\/delpINT.delp"$/;"	v
+delp_path	tests.py	/^delp_path = "\/mnt\/dat\/projects\/programs\/delp-gen\/simple\/delp0.delp"$/;"	v
 drule_symbol	generator.py	/^    drule_symbol = '-<'$/;"	v	class:Generator
-experiment	delpMetrics.py	/^experiment = ComputeMetrics($/;"	v
 find_rule	generator.py	/^    def find_rule(self, conclusion: str, complete_argument: list) -> list:$/;"	m	class:Generator
 generate	generator.py	/^    def generate(self, result_path: str, hyperparams = 'undefined') -> None:$/;"	m	class:Generator
-generator	tests.py	/^    generator = Generator()$/;"	v	class:Test
 get_body_literals	generator.py	/^    def get_body_literals(self, body: list) -> list:$/;"	m	class:Generator
 get_choice	utils.py	/^    def get_choice(self, choices: Union[int, list]):$/;"	m	class:Utils
 get_complement	utils.py	/^    def get_complement(self, literal: str) -> str:$/;"	m	class:Utils
@@ -63,20 +59,22 @@ get_randint	utils.py	/^    def get_randint(self, a: int, b: int) -> int:$/;"	m	c
 get_random	utils.py	/^    def get_random(self) -> float:$/;"	m	class:Utils
 is_defeasible	generator.py	/^    def is_defeasible(self, complete_argument: list) -> bool:$/;"	m	class:Generator
 load	delpMetrics.py	/^    def load(self, filePath):$/;"	m	class:ComputeMetrics
+medium_test_path	tests.py	/^medium_test_path = "\/mnt\/dat\/projects\/programs\/delp-gen\/medium\/"$/;"	v
 pretty	utils.py	/^    def pretty(self, d, indent=0) -> None:$/;"	m	class:Utils
 print_error	utils.py	/^    def print_error(self, msg: str) -> None:$/;"	m	class:Utils
 print_info	utils.py	/^    def print_info(self, msg: str) -> None:$/;"	m	class:Utils
 print_ok	utils.py	/^    def print_ok(self, msg: str) -> None:$/;"	m	class:Utils
 query_delp_solver	delpMetrics.py	/^    def query_delp_solver(self) -> json:$/;"	m	class:ComputeMetrics
+query_literal_solver	delpMetrics.py	/^    def query_literal_solver(self, literal: str) -> None:$/;"	m	class:ComputeMetrics
 show_setting	delpMetrics.py	/^    def show_setting(self) -> None:$/;"	m	class:ComputeMetrics
+simple_test_path	tests.py	/^simple_test_path = "\/mnt\/dat\/projects\/programs\/delp-gen\/simple\/"$/;"	v
 srule_symbol	generator.py	/^    srule_symbol = '<-'$/;"	v	class:Generator
 test	tests.py	/^test = Test()$/;"	v
-test_gen	tests.py	/^    def test_gen(self):$/;"	m	class:Test
-test_path	tests.py	/^test_path = '\/mnt\/dat\/projects\/programs\/propio\/test\/lines\/'$/;"	v
-test_sets	tests.py	/^    def test_sets(self):$/;"	m	class:Test
+test_generator	tests.py	/^    def test_generator(self, dataset_path):$/;"	m	class:Test
+test_metrics	tests.py	/^    def test_metrics(self, result_path: str, dataset_path: str, program: str) -> None:$/;"	m	class:Test
 to_delp_format	generator.py	/^    def to_delp_format(self, result_path: str, id_program: int) -> None:$/;"	m	class:Generator
 to_string_decimal_format	utils.py	/^    def to_string_decimal_format(self, number: float) -> str:$/;"	m	class:Utils
 utils	generator.py	/^    utils = Utils()$/;"	v	class:Generator
 utils	tests.py	/^    utils = Utils()$/;"	v	class:Test
-write_metrics	utils.py	/^    def write_metrics(self, result_path_file: str):$/;"	m	class:Utils
+write_metrics	utils.py	/^    def write_metrics(self, result_path: str, result_path_file: str):$/;"	m	class:Utils
 write_result	utils.py	/^    def write_result(self, path_file: str, result: json) -> None:$/;"	m	class:Utils

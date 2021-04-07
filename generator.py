@@ -90,6 +90,8 @@ class Generator:
         self.USED_HEADS = ()
         # Used for control of defeaters building
         self.USED_NTACTSETS = []
+        # To save all used literals
+        self.LITERALS = []
         """"""
         
         """
@@ -115,9 +117,10 @@ class Generator:
         """
         Clear all data structures and global values
         """
-        self.LITERALS = []
         self.COUNT_LIT = 0
-        self.USED_RULES = []
+        self.USED_HEADS = ()
+        self.USED_NTACTSETS = []
+        self.LITERALS = []
         self.rules = {
                 'drules': [],
                 'srules': [],
@@ -217,6 +220,7 @@ class Generator:
         else:
             literal = atom
         
+        self.LITERALS.append(literal)
         return literal
 
 
@@ -469,6 +473,7 @@ class Generator:
             #    ntact_def = copy.copy(self.utils.get_choice(ntact_sets))
             #    ntact_def.add(new_def_lit) 
             new_def_lit = self.get_new_literal().replace('a','d')
+            self.LITERALS.append(new_def_lit)
             self.add_to_kb(0,new_def_lit, ('true',),'drules')
             ntact_def = copy.copy(self.utils.get_choice(ntact_sets))
             ntact_def.add(new_def_lit)
@@ -477,6 +482,7 @@ class Generator:
 
             body_def = list(ntact_def)
             head_def = self.utils.get_complement(head)
+            self.LITERALS.append(head_def)
             self.add_to_kb(self.params["LEVELS"] + 1, head_def, body_def, 'drules')
             self.USED_NTACTSETS.append(ntact_def)
             return [head_def, [ntact_def]]
@@ -564,6 +570,7 @@ class Generator:
             result_path: The path for save the program
         """ 
         program = []
+        delp_json = []
         to_string = 'use_criterion(' + self.params["PREF_CRITERION"] +').'
         program.append('')
         for key, value in self.levels.items():
@@ -573,16 +580,24 @@ class Generator:
                 rule = self.create_def_rule(drule[0], drule[1])
                 if rule not in program:
                     program.append(rule)
+                    delp_json.append(rule)
             for srule in value['srules']:
                 rule = self.create_strict_rule(srule[0], srule[1])
                 if rule not in program:
                     program.append(rule)
+                    delp_json.append(rule)
 
         for rule in program:
             to_string += rule + '\n'
-
+        
         with open(result_path + 'delp' + str(id_program) + '.delp', 'w') as outfile:
-            outfile.write(to_string) 
+            outfile.write(to_string)
+        
+        self.utils.write_result(result_path + 'delp' + 
+                str(id_program) + '.json', {
+                    'delp': delp_json,
+                    'literals': self.LITERALS
+                    })
 
 
     def generate(self, result_path: str, hyperparams = 'undefined') -> None:
@@ -600,6 +615,4 @@ class Generator:
             self.build_kb_base()
             self.build_kb(self.params["LEVELS"])
             self.build_dialectical_trees()
-            self.to_delp_format(result_path, id_program)
-            #self.build_actsets_ntactsets([1,2,3], 'c')
-             
+            self.to_delp_format(result_path, id_program) 
