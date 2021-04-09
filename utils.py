@@ -75,18 +75,19 @@ class Utils:
             exit()
 
 
-    def write_metrics(self, result_path_file: str):
+    def write_metrics(self, result_path: str, result_path_file: str):
         """
         To comput the average of all metrics and save in a
         simple txt file (to use in excel)
         Args:
-            result_path_files: The path of the file with all results
+            -result_path: The path to save the metrics
+            -result_path_files: The path of the file with all results
         """
         data = self.get_data_from_file(result_path_file)
         arguments = sum(data['arguments']) / len(data['arguments'])
         def_rules = sum(data['def_rules']) / len(data['def_rules'])
         arg_lines = sum(data['arg_lines']) / len(data['arg_lines']) 
-        height_lines = sum(data['height_lines']) / len(data['height_lines'])
+        height_lines = sum(data['height_lines']) / len(data['height_lines']) 
         # Argument | MDDL | H | T    
         to_write = ('\n'
                     + self.to_string_decimal_format(arguments)
@@ -94,7 +95,7 @@ class Utils:
                     + ' ' + self.to_string_decimal_format(height_lines)
                     + ' ' + self.to_string_decimal_format(arg_lines))
 
-        with open('./metrics.txt', 'a') as fileOutput:
+        with open(result_path + '/metrics.txt', 'a') as fileOutput:
             fileOutput.write(to_write)
 
 
@@ -112,6 +113,11 @@ class Utils:
         Args:
             -choices: List of elements or an int
         """
+        if isinstance(choices, list):
+            if len(choices) == 1:
+                return choices[0]
+            else:
+                return np.random.choice(choices, 1)[0]
         return np.random.choice(choices, 1)[0]
 
 

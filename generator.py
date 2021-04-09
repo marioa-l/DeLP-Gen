@@ -88,6 +88,10 @@ class Generator:
         self.COUNT_LIT = 0
         # Used heads 
         self.USED_HEADS = ()
+        # Used for control of defeaters building
+        self.USED_NTACTSETS = []
+        # To save all used literals
+        self.LITERALS = []
         """"""
         
         """
@@ -113,9 +117,10 @@ class Generator:
         """
         Clear all data structures and global values
         """
-        self.LITERALS = []
         self.COUNT_LIT = 0
-        self.USED_RULES = []
+        self.USED_HEADS = ()
+        self.USED_NTACTSETS = []
+        self.LITERALS = []
         self.rules = {
                 'drules': [],
                 'srules': [],
@@ -160,15 +165,29 @@ class Generator:
             -body: A list of literals (the body of the defeasible rule)
         """
         if isinstance(body[0], str):
-            # Is fact
-            body_string = 'true'
+            if body[0] != 'true':
+                body_string = ','.join(body)
+            else:
+                # Is fact or presumptio
+                body_string = 'true'
         else:
             # Is rule
             body_literals = self.get_body_literals(body)
             body_string = ','.join(body_literals)
 
         return str(head + ' ' + self.drule_symbol + ' ' + body_string + '.')
-    
+   
+
+    def get_head(self, level: int, tipo: str, pos: int) -> str:
+        """
+        Return the head of a rule in the KB
+        Args:
+            -level: The level of the rule
+            -tipo: The type of rule (drules o srules)
+            -pos: The index of the rule inside the type and level
+        """
+        return self.levels[level][tipo][pos][0]
+
 
     def get_body_literals(self, body: list) -> list:
         """
@@ -201,6 +220,7 @@ class Generator:
         else:
             literal = atom
         
+        self.LITERALS.append(literal)
         return literal
 
 
@@ -214,8 +234,8 @@ class Generator:
             -type: The type of rule with <head> as its consequent. Options:
                 --'rnd': Randomly assign whether it will be a strict rule or 
                 a defeasible rule (considering the params DEF_PROB).
-                --'srule': Save as strict rule
-                --'drule': Save as defeasible rule
+                --'srules': Save as strict rule
+                --'drules': Save as defeasible rule
         """
         if type == 'rnd':
             random_DS = self.utils.get_random()
@@ -286,19 +306,22 @@ class Generator:
             creating a body
         """
         body = ()
-        
+        # To not add the conclusion or its complement in the body 
         self.USED_HEADS = self.USED_HEADS + (conclusion,)
-        self.USED_HEADS = self.USED_HEADS + (self.utils.get_complement(conclusion),)
+        complement_conclusion = self.utils.get_complement(conclusion)
+        self.USED_HEADS = self.USED_HEADS + (complement_conclusion,)
 
         body_size = self.utils.get_randint(1, self.params["MAX_BODYSIZE"])
         rule = self.get_one_rule_level(level - 1)
-        self.USED_HEADS = self.USED_HEADS + (self.levels[rule[1]][rule[0]][rule[2]][0],)
+        rule_head = self.get_head(rule[1], rule[0], rule[2])
+        self.USED_HEADS = self.USED_HEADS + (rule_head,)
         body = body + (rule,)
 
         for aux in range(body_size - 1):
             select_level = self.utils.get_choice(level)
             new_rule = self.get_one_rule_level(select_level)
-            self.USED_HEADS = self.USED_HEADS + (self.levels[new_rule[1]][new_rule[0]][new_rule[2]][0],)
+            new_rule_head = self.get_head(new_rule[1], new_rule[0], new_rule[2])
+            self.USED_HEADS = self.USED_HEADS + (new_rule_head,)
             body = body + (new_rule,) 
         
         self.USED_HEADS = ()
@@ -339,7 +362,7 @@ class Generator:
                 self.add_to_kb(level, head, body, 'rnd') 
         self.clean_level(level)
    
-    def build_complete_arguments(self, argument: list, tipo: str):
+    def build_complete_arguments(self, argument: list, tipo: str) -> list:
         """
         Build the complete argument
         Args:
@@ -361,7 +384,7 @@ class Generator:
             return []  
 
 
-    def find_in_completearg(self, conclusion: str, complete_argument: list) -> list:
+    def find_rule(self, conclusion: str, complete_argument: list) -> list:
         """
         Find and return the body literals of a rule in a complete argument
         with conclusion <conclusion> and its type (drule o srule)
@@ -374,13 +397,14 @@ class Generator:
                 --tipo: 'drule' or 'srule'
         """
         try:
-            rule = next(rule for rule in complete_argument if rule[0] == conclusion) 
+            rule = next(rule for rule in complete_argument 
+                                                if rule[0] == conclusion) 
             literals_tipo = [set(rule[2]), rule[1]]
             return literals_tipo
         except StopIteration:
             return [set(),''] # Facts or Presumptions
 
-    def build_actsets_ntactsets(self, complete_argument: list, conclusion: str) -> dict:
+    def build_actntactsets(self, conclusion: str, complete_argument: list) -> dict:
         """
         Compute the Act-sets and NTAct-sets of the argument <complete_argument>
         Args:
@@ -399,7 +423,7 @@ class Generator:
         while True:
             [conj, tipo] = c.pop(0)
             for lit in conj:
-                [new_actset, type_rule] = self.find_in_completearg(lit, complete_argument)
+                [new_actset, type_rule] = self.find_rule(lit, complete_argument)
                 if len(new_actset) != 0:
                     if tipo == 'trivial' and type_rule == 'srule':
                         # The new act set is 'trivial'
@@ -419,115 +443,95 @@ class Generator:
                 'act_sets': act_sets,
                 'ntact_sets': ntact_sets
                 }
-    
+
+
+    def is_defeasible(self, complete_argument: list) -> bool:
+        """
+        Determine if an argument is defeasible or not
+        Args:
+            -complete_argument: The complete argument
+        """ 
+        try:
+            next(rule for rule in complete_argument if rule[1] == 'drules')
+            return True
+        except StopIteration:
+            return False
+
+
+    def build_defeater(self, head: str, ntact_sets: list, tipo: str) -> list:
+        if len(ntact_sets) != 0 and ntact_sets[0] != '':
+            #possibles_ntact = [ntact for ntact in ntact_sets if 
+            #        ntact not in self.USED_NTACTSETS]
+            #
+            #if len(possibles_ntact) != 0:
+            #    # Choice from ntactsets of the defeated argument (for 'blocking')
+            #    ntact_def = self.utils.get_choice(ntact_sets)
+            #else:
+            #    # Build new ntactset for the defeater's body? (proper)
+            #    new_def_lit = self.get_new_literal().replace('a','d')
+            #    self.add_to_kb(0,new_def_lit, ('true',),'drules')
+            #    ntact_def = copy.copy(self.utils.get_choice(ntact_sets))
+            #    ntact_def.add(new_def_lit) 
+            new_def_lit = self.get_new_literal().replace('a','d')
+            self.LITERALS.append(new_def_lit)
+            self.add_to_kb(0,new_def_lit, ('true',),'drules')
+            ntact_def = copy.copy(self.utils.get_choice(ntact_sets))
+            ntact_def.add(new_def_lit)
+
+
+
+            body_def = list(ntact_def)
+            head_def = self.utils.get_complement(head)
+            self.LITERALS.append(head_def)
+            self.add_to_kb(self.params["LEVELS"] + 1, head_def, body_def, 'drules')
+            self.USED_NTACTSETS.append(ntact_def)
+            return [head_def, [ntact_def]]
+        else:
+            # Argument without ntactsets (the base of the KB)
+            return []
+
+        
     def build_dialectical_trees(self) -> None:
         """
-        To build all dialectical trees for each arguments
-        """ 
-        for level, rules in self.levels.items():
-            d_arguments = rules["drules"]
-            s_arguments = rules["srules"]
-            self.utils.print_info("D Arguments: ") 
-            for argument in d_arguments:
-                argument = [rule for rule in argument if not isinstance(argument[1][0], str)]
-                if len(argument) != 0:
-                    self.utils.print_ok(argument)
-                    complete_argument = self.build_complete_arguments(argument, 'drules')
-                    act_ntact_sets = self.build_actsets_ntactsets(complete_argument, argument[0])
-                    self.utils.pretty(act_ntact_sets, indent=1)
-            self.utils.print_info("S Arguments: ")
-            for argument in s_arguments:
-                argument = [rule for rule in argument if not isinstance(argument[1][0], str)]
-                if len(argument) != 0:
-                    self.utils.print_ok(argument)
-                    complete_argument = self.build_complete_arguments(argument, 'srules')
-                    act_ntact_sets = self.build_actsets_ntactsets(complete_argument, argument[0])
-                    self.utils.pretty(act_ntact_sets, indent=1) 
+        To build all dialectical trees for arguments in the top level of the
+        KB
+        """
+        self.levels[self.params["LEVELS"] + 1] = {'drules': [], 'srules': []}
+        tree_height = self.params["TREE_HEIGHT"]
+        ramification = self.params["RAMIFICATION"]
+        for tipo, args in self.levels[self.params["LEVELS"]].items():
+            for argument in args: 
+                complete_arg = self.build_complete_arguments(argument, tipo)
+                if self.is_defeasible(complete_arg):
+                    actntact_sets = self.build_actntactsets(argument[0], complete_arg)
+                    self.build_tree(argument[0], actntact_sets["ntact_sets"],
+                                                    tree_height, ramification) 
 
-
-    def build_tree(self, literal: str, body: list, level: int, height: int) -> None:
+    def build_tree(self, head: str, ntact_sets: list, height: int, ram: int) -> None:
         """
         Build the dialectical tree for a particular argument
         Args:
-            literal: The conclusion of the root arguement
-            body: The body of the root argument
-            level: The KB level of the root argument
-            height: The hight of the tree to be constructed
+            -head: The conclusion of the root arguement
+            -ntact_sets: A list with all the ntact sets of the root argument
+            -height: The hight of the tree to be constructed
+            -ram: Ramification factor (number of different defeats for an 
+            argument)
         """
-        inners_point = [lit for lit in body if lit not in self.rules['srules']]
-        if len(inners_point) != 0:
-            # ramification is the max number of defeater for the actual argument
-            # ramification = self.utils.get_randint(1, self.params.RAMIFICATION + 1)
-            ramification = self.params.RAMIFICATION
-            if height == 0:
-                # Tree leaves
-                for aux in range(ramification):
-                    random_def_point = self.utils.get_random()
-                    if random_def_point < self.params.INNER_PROB:
-                        # Build a defeater for some litearl in the body
-                        inner_point = self.utils.get_choice(inners_point)
-                        complement = self.utils.get_complement(inner_point)
-                        # defeater_body = build_body(level)
-                        #defeater_body = self.build_body_def(body, complement, literal)
-                        defeater_body = self.build_body_incremental(body)
-                        self.KB[level]['drules'].append([complement, defeater_body])
-                        self.rules['drules'].append(complement)
-                        self.utils.print_info('****LEAF-inner*****')
-                        self.utils.print_ok('Defeated Argument: [' + literal + ',' + str(body) + ']')
-                        self.utils.print_ok('By: [' + complement + ',' + str(defeater_body) + ']')
-                        self.utils.print_info('****LEAF*****')
-                    else:
-                        # Build a defeater for literal
-                        complement = self.utils.get_complement(literal)
-                        # defeater_body = build_body(level)
-                        #defeater_body = self.build_body_def(body, complement, literal)
-                        defeater_body = self.build_body_incremental(body)
-                        self.KB[level]['drules'].append([complement, defeater_body])
-                        self.rules['drules'].append(complement)
-                        self.utils.print_info('****LEAF-conclusion*****')
-                        self.utils.print_ok('Defeated Argument: [' + literal + ',' + str(body) + ']')
-                        self.utils.print_ok('By: [' + complement + ',' + str(defeater_body) + ']')
-                        self.utils.print_info('****LEAF*****')
-            else:
-                # Internal levels of the dialectical tree
-                defeaters = []
-                for aux in range(ramification):
-                    random_def_point = self.utils.get_random()
-                    if random_def_point < self.params.INNER_PROB:
-                        # Build a defeater for some litearl in the body
-                        # and append in to defeaters list
-                        inner_point = self.utils.get_choice(inners_point)
-                        complement = self.utils.get_complement(inner_point)
-                        # defeater_body = build_body(level)
-                        
-                        #defeater_body = self.build_body_def(body, complement, literal)
-                        defeater_body = self.build_body_incremental(body)
-                        self.KB[level]['drules'].append([complement, defeater_body])
-                        self.rules['drules'].append(complement)
-                        defeaters.append([complement, defeater_body])
-                        self.utils.print_info('****INTERNAL-inner*****')
-                        self.utils.print_ok('Defeated Argumenttt: [' + literal + ',' + str(body) + ']')
-                        self.utils.print_ok('By: [' + complement + ',' + str(defeater_body) + ']')
-                        self.utils.print_info('*********')
-
-                    else:
-                        # Build a defeater for literal
-                        # and append in to defeaters list
-                        complement = self.utils.get_complement(literal)
-                        # defeater_body = build_body(level)
-                        #defeater_body = self.build_body_def(body, complement, literal)
-                        defeater_body = self.build_body_incremental(body)
-                        self.KB[level]['drules'].append([complement, defeater_body])
-                        self.rules['drules'].append(complement)
-                        defeaters.append([complement, defeater_body])
-                        self.utils.print_info('****INTERNAL-conclusion*****')
-                        self.utils.print_ok('Defeated Argument: [' + literal + ',' + str(body) + ']')
-                        self.utils.print_ok('By: [' + complement + ',' + str(defeater_body) + ']')
-                        self.utils.print_info('*********')
-                for defeater in defeaters:
-                    self.build_tree(defeater[0], defeater[1], level, height - 1)
+        if height == 1:
+            # Build the leaves of the tree
+            for aux in range(ram):
+                self.build_defeater(head, ntact_sets, 'blocking')
         else:
-            pass
+            # Internal levels of the dialectical tree
+            defeaters = []
+            for aux in range(ram):
+                defeater = self.build_defeater(head, ntact_sets, 'blocking') 
+                defeaters.append(defeater)
+            self.USED_NTACTSETS = []       
+            for defeater in defeaters:
+                if len(defeater) != 0: 
+                    ram = self.utils.get_randint(1, ram)
+                    self.build_tree(defeater[0], defeater[1], height - 1, ram)
 
 
     def build_kb_base(self) -> None:
@@ -566,6 +570,7 @@ class Generator:
             result_path: The path for save the program
         """ 
         program = []
+        delp_json = []
         to_string = 'use_criterion(' + self.params["PREF_CRITERION"] +').'
         program.append('')
         for key, value in self.levels.items():
@@ -575,16 +580,24 @@ class Generator:
                 rule = self.create_def_rule(drule[0], drule[1])
                 if rule not in program:
                     program.append(rule)
+                    delp_json.append(rule)
             for srule in value['srules']:
                 rule = self.create_strict_rule(srule[0], srule[1])
                 if rule not in program:
                     program.append(rule)
+                    delp_json.append(rule)
 
         for rule in program:
             to_string += rule + '\n'
-
+        
         with open(result_path + 'delp' + str(id_program) + '.delp', 'w') as outfile:
-            outfile.write(to_string) 
+            outfile.write(to_string)
+        
+        self.utils.write_result(result_path + 'delp' + 
+                str(id_program) + '.json', {
+                    'delp': delp_json,
+                    'literals': self.LITERALS
+                    })
 
 
     def generate(self, result_path: str, hyperparams = 'undefined') -> None:
@@ -601,7 +614,5 @@ class Generator:
             self.clear_datastructures()
             self.build_kb_base()
             self.build_kb(self.params["LEVELS"])
-            self.to_delp_format(result_path, id_program)
-            self.build_dialectical_trees() 
-            #self.build_actsets_ntactsets([1,2,3], 'c')
-             
+            self.build_dialectical_trees()
+            self.to_delp_format(result_path, id_program) 
