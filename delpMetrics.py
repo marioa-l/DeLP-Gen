@@ -217,8 +217,7 @@ class ComputeMetrics:
         
         self.utils.write_result(self.build_path_result(), results)
 
-    #   'dataset_length' is the number of programs to analyze
-    #   'result_file' is the name for the file with results
+
     def compute_dataset(self, dataset_length):
         global height_lines
 
