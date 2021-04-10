@@ -23,6 +23,7 @@ __init__	tests.py	/^    def __init__(self):$/;"	m	class:Test
 __init__	utils.py	/^    def __init__(self):$/;"	m	class:Utils
 add_to_kb	generator.py	/^    def add_to_kb(self, level: int, head: str, body: list, type: str) -> None:$/;"	m	class:Generator
 analyze_results	delpMetrics.py	/^    def analyze_results(self, result):$/;"	m	class:ComputeMetrics
+args	tests.py	/^args = parser.parse_args()$/;"	v
 bcolors	utils.py	/^class bcolors:$/;"	c
 build_actntactsets	generator.py	/^    def build_actntactsets(self, conclusion: str, complete_argument: list) -> dict:$/;"	m	class:Generator
 build_arguments	generator.py	/^    def build_arguments(self, level: int) -> None:$/;"	m	class:Generator
@@ -36,14 +37,12 @@ build_path_result	delpMetrics.py	/^    def build_path_result(self) -> str:$/;"	m
 build_tree	generator.py	/^    def build_tree(self, head: str, ntact_sets: list, height: int, ram: int) -> None:$/;"	m	class:Generator
 clean_level	generator.py	/^    def clean_level(self, level: int) -> None:$/;"	m	class:Generator
 clear_datastructures	generator.py	/^    def clear_datastructures(self) -> None:$/;"	m	class:Generator
-complex_test_path	tests.py	/^complex_test_path = "\/mnt\/dat\/projects\/programs\/delp-gen\/complex\/"$/;"	v
 compute_dataset	delpMetrics.py	/^    def compute_dataset(self, dataset_length):$/;"	m	class:ComputeMetrics
 compute_one	delpMetrics.py	/^    def compute_one(self) -> None:$/;"	m	class:ComputeMetrics
 count_lines	delpMetrics.py	/^    def count_lines(self, root: int, lines: list, level=0) -> int:$/;"	m	class:ComputeMetrics
 create_def_rule	generator.py	/^    def create_def_rule(self, head: str, body: Union[list, tuple]) -> str:$/;"	m	class:Generator
 create_strict_rule	generator.py	/^    def create_strict_rule(self, head: str, body: Union[list,tuple]) -> str:$/;"	m	class:Generator
 define_hyperparams	generator.py	/^    def define_hyperparams(self, hyperparams: dict) -> None:$/;"	m	class:Generator
-delp_path	tests.py	/^delp_path = "\/mnt\/dat\/projects\/programs\/delp-gen\/simple\/delp0.delp"$/;"	v
 drule_symbol	generator.py	/^    drule_symbol = '-<'$/;"	v	class:Generator
 find_rule	generator.py	/^    def find_rule(self, conclusion: str, complete_argument: list) -> list:$/;"	m	class:Generator
 generate	generator.py	/^    def generate(self, result_path: str, hyperparams = 'undefined') -> None:$/;"	m	class:Generator
@@ -57,9 +56,10 @@ get_new_literal	generator.py	/^    def get_new_literal(self) -> str:$/;"	m	class
 get_one_rule_level	generator.py	/^    def get_one_rule_level(self, level: int) -> tuple:$/;"	m	class:Generator
 get_randint	utils.py	/^    def get_randint(self, a: int, b: int) -> int:$/;"	m	class:Utils
 get_random	utils.py	/^    def get_random(self) -> float:$/;"	m	class:Utils
+input_path	tests.py	/^input_path = args.Path$/;"	v
 is_defeasible	generator.py	/^    def is_defeasible(self, complete_argument: list) -> bool:$/;"	m	class:Generator
 load	delpMetrics.py	/^    def load(self, filePath):$/;"	m	class:ComputeMetrics
-medium_test_path	tests.py	/^medium_test_path = "\/mnt\/dat\/projects\/programs\/delp-gen\/medium\/"$/;"	v
+parser	tests.py	/^parser = argparse.ArgumentParser(description='Test file for generate and metrics compute')$/;"	v
 pretty	utils.py	/^    def pretty(self, d, indent=0) -> None:$/;"	m	class:Utils
 print_error	utils.py	/^    def print_error(self, msg: str) -> None:$/;"	m	class:Utils
 print_info	utils.py	/^    def print_info(self, msg: str) -> None:$/;"	m	class:Utils
@@ -67,7 +67,6 @@ print_ok	utils.py	/^    def print_ok(self, msg: str) -> None:$/;"	m	class:Utils
 query_delp_solver	delpMetrics.py	/^    def query_delp_solver(self) -> json:$/;"	m	class:ComputeMetrics
 query_literal_solver	delpMetrics.py	/^    def query_literal_solver(self, literal: str) -> None:$/;"	m	class:ComputeMetrics
 show_setting	delpMetrics.py	/^    def show_setting(self) -> None:$/;"	m	class:ComputeMetrics
-simple_test_path	tests.py	/^simple_test_path = "\/mnt\/dat\/projects\/programs\/delp-gen\/simple\/"$/;"	v
 srule_symbol	generator.py	/^    srule_symbol = '<-'$/;"	v	class:Generator
 test	tests.py	/^test = Test()$/;"	v
 test_generator	tests.py	/^    def test_generator(self, dataset_path):$/;"	m	class:Test
