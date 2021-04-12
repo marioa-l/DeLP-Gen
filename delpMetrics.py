@@ -207,14 +207,33 @@ class ComputeMetrics:
         arg_lines.append(data['avg_arg_lines'])
         height_lines.append(data['avg_height_lines'])
         
+        self.compute_save_metrics(arguments, def_rules, arg_lines, 
+                                    height_lines, self.times) 
+
+
+    def compute_save_metrics(self, arguments: list, def_rules: list,
+                                    arg_lines: list, height_lines: list,
+                                    times: list) -> None:
+        metric_args = sum(arguments) / len(arguments)
+        mddl = sum(def_rules) / len(def_rules)
+        t = sum(arg_lines) / len(arg_lines) 
+        h = sum(height_lines) / len(height_lines)
+        min_time = min(self.times)
+        max_time = max(self.times)
+        mean_time = sum(self.times) / len(self.times)
+
         results = {
-            'arguments': arguments,
-            'defeaters': defeaters,
-            'def_rules': def_rules,
-            'arg_lines': arg_lines,
-            'height_lines': height_lines
+            'arguments': metric_args,
+            'mddl': mddl,
+            't': t,
+            'h': h,
+            'times':{
+                    'min': float('{:0.4f}'.format(min_time)),
+                    'max': float('{:0.4f}'.format(max_time)),
+                    'mean': float('{:0.4f}'.format(mean_time))
+                } 
         }
-        
+
         self.utils.write_result(self.build_path_result(), results)
 
 
@@ -239,24 +258,5 @@ class ComputeMetrics:
             height_lines.append(data['avg_height_lines'])
             spinner.next()
         
-        metric_args = sum(arguments) / len(arguments)
-        mddl = sum(def_rules) / len(def_rules)
-        t = sum(arg_lines) / len(arg_lines) 
-        h = sum(height_lines) / len(height_lines)
-        min_time = min(self.times)
-        max_time = max(self.times)
-        mean_time = sum(self.times) / len(self.times)
-
-        results = {
-            'arguments': metric_args,
-            'mddl': mddl,
-            't': t,
-            'h': h,
-            'times':{
-                    'min': float('{:0.4f}'.format(min_time)),
-                    'max': float('{:0.4f}'.format(max_time)),
-                    'mean': float('{:0.4f}'.format(mean_time))
-                } 
-        }
-
-        self.utils.write_result(self.build_path_result(), results)
+        self.compute_save_metrics(arguments, def_rules, arg_lines, 
+                                    height_lines, self.times)
