@@ -39,8 +39,8 @@ class Test:
         metrics = ComputeMetrics(dataset_path, 'metrics', dataset_path, '')
         metrics.show_setting()
         # List all program in the directory (but the parameters file)
-        n_programs = os.listdir(dataset_path) - 1
-        metrics.compute_dataset(len(n_programs))
+        n_programs = os.listdir(dataset_path)
+        metrics.compute_dataset(int((len(n_programs) - 1) / 2)) 
         #metrics.utils.write_metrics(result_path, metrics.build_path_result()) 
 
 test = Test()
@@ -69,6 +69,7 @@ if not os.path.isdir(input_path):
 
 if args.all:
     # Compute Dataset
+    test.test_generator(input_path)
     test.test_metrics(input_path)
 elif args.one:
     # Compute one delp program

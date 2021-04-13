@@ -57,9 +57,10 @@ get_new_literal	generator.py	/^    def get_new_literal(self) -> str:$/;"	m	class
 get_one_rule_level	generator.py	/^    def get_one_rule_level(self, level: int) -> tuple:$/;"	m	class:Generator
 get_randint	utils.py	/^    def get_randint(self, a: int, b: int) -> int:$/;"	m	class:Utils
 get_random	utils.py	/^    def get_random(self) -> float:$/;"	m	class:Utils
+get_size_metrics	delpMetrics.py	/^    def get_size_metrics(self) -> list:$/;"	m	class:ComputeMetrics
 input_path	tests.py	/^input_path = args.Path$/;"	v
 is_defeasible	generator.py	/^    def is_defeasible(self, complete_argument: list) -> bool:$/;"	m	class:Generator
-load	delpMetrics.py	/^    def load(self, filePath):$/;"	m	class:ComputeMetrics
+load	delpMetrics.py	/^    def load(self):$/;"	m	class:ComputeMetrics
 parser	tests.py	/^parser = argparse.ArgumentParser(description='Test file for generate and metrics compute')$/;"	v
 pretty	utils.py	/^    def pretty(self, d, indent=0) -> None:$/;"	m	class:Utils
 print_error	utils.py	/^    def print_error(self, msg: str) -> None:$/;"	m	class:Utils

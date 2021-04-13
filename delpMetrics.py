@@ -26,6 +26,8 @@ class ComputeMetrics:
         self.aux_height = []
         self.utils = Utils()
         self.times = []
+        self.rules = []
+        self.fact_presum = []
         #self.patter_presumption = \[\([a-zA-Z]*\-\<[t|T]rue\)\]
 
 
@@ -74,13 +76,27 @@ class ComputeMetrics:
         delpProgram = self.path_delp
         cmd = ['./globalCore', 'file', delpProgram, 'all']
         try:
-            output = check_output(cmd, stderr=STDOUT, timeout=60). \
+            output = check_output(cmd, stderr=STDOUT). \
                 decode(sys.stdout.encoding)
             result = json.loads(output)
             return result
         except Exception as e:
             print(e)
             return "Error"
+
+
+    def get_size_metrics(self) -> list:
+        """
+        Count the number of rules and facts and presumtions in the program
+        Output:
+            -list: [#rules, #factsandpresum]
+        """
+        delp = open(self.path_delp, 'r').read().replace('\n','')
+        facts = len(re.findall('<- true.', delp))
+        presum = len(re.findall('-< true.', delp))
+        drules = len(re.findall('-<', delp)) - presum
+        srules = len(re.findall('<-', delp)) - facts
+        return [srules + drules, facts + presum]  
 
 
     def count_lines(self, root: int, lines: list, level=0) -> int:
@@ -172,14 +188,17 @@ class ComputeMetrics:
         }
 
 
-    def load(self, filePath):
+    def load(self):
         initial_time = time.time()
         core_response = self.query_delp_solver()
         end_time = time.time()
         query_time = end_time - initial_time
         self.times.append(query_time)
         if core_response != "Error":
+            size_metrics = self.get_size_metrics()
             result = self.analyze_results(core_response)
+            self.rules.append(size_metrics[0])
+            self.fact_presum.append(size_metrics[1])
             return result
         else:
             return {
@@ -188,7 +207,7 @@ class ComputeMetrics:
                 'avg_def_rules': 0.0,
                 'avg_arg_lines': 0,
                 'avg_height_lines': 0.0
-            }
+                }
 
 
     def compute_one(self) -> None:
@@ -198,9 +217,8 @@ class ComputeMetrics:
         defeaters = []
         def_rules = []
         arg_lines = []
-        height_lines = []
-
-        data = self.load(self.path_delp)
+        height_lines = [] 
+        data = self.load()
         arguments.append(data['n_arguments'])
         defeaters.append(data['n_defeaters'])
         def_rules.append(data['avg_def_rules'])
@@ -208,12 +226,14 @@ class ComputeMetrics:
         height_lines.append(data['avg_height_lines'])
         
         self.compute_save_metrics(arguments, def_rules, arg_lines, 
-                                    height_lines, self.times) 
+                                    height_lines, self.times, self.rules,
+                                    self.fact_presum) 
 
 
     def compute_save_metrics(self, arguments: list, def_rules: list,
                                     arg_lines: list, height_lines: list,
-                                    times: list) -> None:
+                                    times: list, rules:int, 
+                                    fact_presum: int) -> None:
         metric_args = sum(arguments) / len(arguments)
         mddl = sum(def_rules) / len(def_rules)
         t = sum(arg_lines) / len(arg_lines) 
@@ -221,6 +241,8 @@ class ComputeMetrics:
         min_time = min(self.times)
         max_time = max(self.times)
         mean_time = sum(self.times) / len(self.times)
+        mean_rules = sum(rules) / len(rules)
+        mean_fact_presum = sum(fact_presum) / len(fact_presum)
 
         results = {
             'arguments': metric_args,
@@ -231,7 +253,9 @@ class ComputeMetrics:
                     'min': float('{:0.4f}'.format(min_time)),
                     'max': float('{:0.4f}'.format(max_time)),
                     'mean': float('{:0.4f}'.format(mean_time))
-                } 
+                },
+            'rules': float('{:0.2f}'.format(mean_rules)),
+            'fact_preum': float('{:0.2f}'.format(mean_fact_presum))
         }
 
         self.utils.write_result(self.build_path_result(), results)
@@ -250,7 +274,7 @@ class ComputeMetrics:
         for count in range(dataset_length):
             filePath = self.path_dataset + 'delp' + str(count) + '.delp'
             self.path_delp = filePath
-            data = self.load(filePath)
+            data = self.load()
             arguments.append(data['n_arguments'])
             defeaters.append(data['n_defeaters'])
             def_rules.append(data['avg_def_rules'])
@@ -259,4 +283,5 @@ class ComputeMetrics:
             spinner.next()
         
         self.compute_save_metrics(arguments, def_rules, arg_lines, 
-                                    height_lines, self.times)
+                                    height_lines, self.times,
+                                    self.rules, self.fact_presum)
