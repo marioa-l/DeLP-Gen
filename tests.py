@@ -57,7 +57,9 @@ parser.add_argument('-one',
 parser.add_argument('-p',
                     type=str,
                     help='DeLP program path')
-
+parser.add_argument('-gen',
+                    action='store_true',
+                    help='To only generate the programs')
 args = parser.parse_args()
 
 input_path = args.Path
@@ -66,7 +68,8 @@ program_path = args.p
 if not os.path.isdir(input_path):
     print('The path specified does not exist')
     sys.exit()
-
+if args.gen:
+    test.test_generator(input_path)
 if args.all:
     # Compute Dataset
     test.test_generator(input_path)
