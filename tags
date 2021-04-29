@@ -21,7 +21,7 @@ __init__	delpMetrics.py	/^    def __init__(self,$/;"	m	class:ComputeMetrics
 __init__	generator.py	/^    def __init__(self) -> None:$/;"	m	class:Generator
 __init__	tests.py	/^    def __init__(self):$/;"	m	class:Test
 __init__	utils.py	/^    def __init__(self):$/;"	m	class:Utils
-add_to_kb	generator.py	/^    def add_to_kb(self, level: int, head: str, body: list, type: str) -> None:$/;"	m	class:Generator
+add_to_kb	generator.py	/^    def add_to_kb(self, level: int, head: str, body: list, r_type: str) -> None:$/;"	m	class:Generator
 analyze_results	delpMetrics.py	/^    def analyze_results(self, result):$/;"	m	class:ComputeMetrics
 args	tests.py	/^args = parser.parse_args()$/;"	v
 bcolors	utils.py	/^class bcolors:$/;"	c

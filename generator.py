@@ -91,7 +91,7 @@ class Generator:
         # Used for control of defeaters building
         self.USED_NTACTSETS = []
         # To save all used literals
-        self.LITERALS = []
+        self.LITERALS = {}
         """"""
         
         """
@@ -120,7 +120,7 @@ class Generator:
         self.COUNT_LIT = 0
         self.USED_HEADS = ()
         self.USED_NTACTSETS = []
-        self.LITERALS = []
+        self.LITERALS = {}
         self.rules = {
                 'drules': [],
                 'srules': [],
@@ -220,34 +220,37 @@ class Generator:
         else:
             literal = atom
         
-        self.LITERALS.append(literal)
+        #self.LITERALS.append(literal)
         return literal
 
 
-    def add_to_kb(self, level: int, head: str, body: list, type: str) -> None:
+    def add_to_kb(self, level: int, head: str, body: list, r_type: str) -> None:
         """
         Add a new argument to the KB
         Args:
             -level: The level to which the argument belongs
             -head: The head of the argument
             -body: Body of the argument
-            -type: The type of rule with <head> as its consequent. Options:
+            -r_type: The type of rule with <head> as its consequent. Options:
                 --'rnd': Randomly assign whether it will be a strict rule or 
                 a defeasible rule (considering the params DEF_PROB).
                 --'srules': Save as strict rule
                 --'drules': Save as defeasible rule
         """
-        if type == 'rnd':
+        if r_type == 'rnd':
             random_DS = self.utils.get_random()
             if random_DS < self.params["DRULE_PROB"]:
                 self.levels[level]['drules'].append((head, body))
                 self.rules['drules'].append(head)
+                self.LITERALS[level].append(head)
             else:
                 self.levels[level]['srules'].append((head, body))
                 self.rules['srules'].append(head)
+                self.LITERALS[level].append(head)
         else:
-            self.levels[level][type].append((head, body))
-            self.rules[type].append(head)
+            self.levels[level][r_type].append((head, body))
+            self.rules[r_type].append(head)
+            self.LITERALS[level].append(head)
 
 
 
@@ -280,6 +283,7 @@ class Generator:
                 #self.utils.print_error("No more drules!")
                 lit = self.get_new_literal()
                 self.levels[0]['drules'].append((lit, ('true',)))
+                self.LITERALS[0].append(lit)
                 rule = ('drules', 0, len(self.levels[0]['drules']) - 1)
         else:
             if len(possibles_srules) != 0:
@@ -291,6 +295,7 @@ class Generator:
                 #self.utils.print_error("No more srules!")
                 lit = self.get_new_literal()
                 self.levels[0]['srules'].append((lit, ('true',)))
+                self.LITERALS[0].append(lit)
                 rule = ('srules', 0, len(self.levels[0]['srules']) - 1)
         #self.utils.print_error(str(rule))
         return rule
@@ -346,6 +351,8 @@ class Generator:
         """
         # To save all arguments in this level
         self.levels[level] = {'drules': [], 'srules': []}
+        # To save all literals
+        self.LITERALS[level] = []
         # Min number of different argumens in the level
         min_args = self.params["MIN_ARGSLEVEL"]
 
@@ -473,7 +480,7 @@ class Generator:
             #    ntact_def = copy.copy(self.utils.get_choice(ntact_sets))
             #    ntact_def.add(new_def_lit) 
             new_def_lit = self.get_new_literal().replace('a','d')
-            self.LITERALS.append(new_def_lit)
+            #self.LITERALS.append(new_def_lit)
             self.add_to_kb(0,new_def_lit, ('true',),'drules')
             ntact_def = copy.copy(self.utils.get_choice(ntact_sets))
             ntact_def.add(new_def_lit)
@@ -482,7 +489,7 @@ class Generator:
 
             body_def = list(ntact_def)
             head_def = self.utils.get_complement(head)
-            self.LITERALS.append(head_def)
+            #self.LITERALS.append(head_def)
             self.add_to_kb(self.params["LEVELS"] + 1, head_def, body_def, 'drules')
             self.USED_NTACTSETS.append(ntact_def)
             return [head_def, [ntact_def]]
@@ -497,6 +504,7 @@ class Generator:
         KB
         """
         self.levels[self.params["LEVELS"] + 1] = {'drules': [], 'srules': []}
+        self.LITERALS[self.params["LEVELS"] + 1] = []
         tree_height = self.params["TREE_HEIGHT"]
         ramification = self.params["RAMIFICATION"]
         for tipo, args in self.levels[self.params["LEVELS"]].items():
@@ -539,15 +547,18 @@ class Generator:
         Build the KB Base (facts and presumptions only)
         """
         self.levels[0] = {'drules': [], 'srules': []}
+        self.LITERALS[0] = []
         for i in range(self.params["KBBASE_SIZE"]):
             random_FP = self.utils.get_random()
             literal = self.get_new_literal()
             if random_FP < self.params["FACT_PROB"]:
                 # New Fact
                 self.levels[0]['srules'].append((literal, ('true',)))
+                self.LITERALS[0].append(literal)
             else:
                 # New Presumption
                 self.levels[0]['drules'].append((literal, ('true',)))
+                self.LITERALS[0].append(literal)
 
 
     def build_kb(self, level: int) -> None:
