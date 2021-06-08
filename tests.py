@@ -45,7 +45,7 @@ class Test:
 
 test = Test()
 parser = argparse.ArgumentParser(description='Test file for generate and metrics compute')
-parser.add_argument('Path',
+parser.add_argument('-load',
                     type=str,
                     help='The path for load dataset and save the results')
 parser.add_argument('-all',
@@ -62,7 +62,7 @@ parser.add_argument('-gen',
                     help='To only generate the programs')
 args = parser.parse_args()
 
-input_path = args.Path
+input_path = args.load
 program_path = args.p
 
 if not os.path.isdir(input_path):
