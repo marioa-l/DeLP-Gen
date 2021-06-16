@@ -604,7 +604,7 @@ class Generator:
         with open(result_path + 'delp' + str(id_program) + '.delp', 'w') as outfile:
             outfile.write(to_string)
         
-        filtered_literals =  {k, v for k, v in self.LITERALS.items() if v != []}
+        filtered_literals =  {k: v for k, v in self.LITERALS.items() if v != []}
         self.utils.write_result(result_path + 'delp' + 
                 str(id_program) + '.json', {
                     'delp': delp_json,
