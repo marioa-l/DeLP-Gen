@@ -20,13 +20,14 @@ class Test:
     
 
     def __init__(self):
-        print("Testing...")
+        print("Starting...")
 
 
     def test_generator(self, dataset_path):
         generator = Generator()
         params = self.utils.get_data_from_file(dataset_path + 'parameters.json')
         generator.generate(dataset_path, params)
+        print("Complete")
     
 
     def test_metrics_one(self, dir_path: str, delp_name: str) -> None:

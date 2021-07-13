@@ -601,12 +601,11 @@ class Generator:
         for rule in program:
             to_string += rule + '\n'
         
-        with open(result_path + 'delp' + str(id_program) + '.delp', 'w') as outfile:
+        with open(result_path + str(id_program) + 'delp' + '.delp', 'w') as outfile:
             outfile.write(to_string)
         
         filtered_literals =  {k: v for k, v in self.LITERALS.items() if v != []}
-        self.utils.write_result(result_path + 'delp' + 
-                str(id_program) + '.json', {
+        self.utils.write_result(result_path + str(id_program) + 'delp' + '.json', {
                     'delp': delp_json,
                     'literals': filtered_literals
                     })
