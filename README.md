@@ -8,7 +8,7 @@
 
 - Bottom-up approch
 
-It begins by generating the basic components on which the most complex structures will be created. First the *****facts** and **presumptions**, which form the **base** of the program.
+It begins by generating the basic components on which the most complex structures will be created. First the *****facts and **presumptions, which form the **base of the program.
 
 # Parameters
 
