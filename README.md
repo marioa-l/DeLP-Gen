@@ -23,8 +23,16 @@ The `arguments` are organized according to a `level` in the program. This level 
 | Param | Meaning |
 |-------|---------|
 | `BASE_SIZE`     | Minimum number of facts and presumptions to create arguments|
-| 1     | 2       |
-| 1     | 2       |
+| `FACT_PROB`     | Probability that an element of the program base is a fact   |
+| `NEG_PROB`      | Probability to create a negated atom                        |
+| `DRULE_PROB`    | Probability to create a defeasible rule                     |
+| `MAX_RULESPERHEAD` | Maximum number of rules with the same literal in their head |
+| `MAX_BODYSIZE`     | Maximum number of literals in the body of an argument       |
+| `LEVEL`            | Programs levels                                             |
+| `RAMIFICATION`     | Maximum number of defeaters for an argument                 |
+| `TREE_HEIGHT`      | Maximum height of dialectical trees                         |
+| `INNER_PROB`       | Probability that the attack relationship is of the “internal” type |
+| `MIN_ARGSLEVEL`    | Minimum number of distinct arguments at a level of the program |
 
 # Test
 
