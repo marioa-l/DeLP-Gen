@@ -22,7 +22,7 @@ The `arguments` are organized according to a `level` in the program. This level 
 
 | Param | Meaning |
 |-------|---------|
-| 1     | 2       |
+| `BASE_SIZE`     | Minimum number of facts and presumptions to create arguments|
 | 1     | 2       |
 | 1     | 2       |
 
