@@ -1,4 +1,6 @@
-# DeLP-Gen
+<p align="center">
+	# DeLP-Gen
+</p>
 
 ## A DeLP program generator
 
