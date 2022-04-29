@@ -1,10 +1,10 @@
+# <h1 align="center">DeLP-Gen</h1>
 <p align="center">
-<img src="https://github.com/marioa-l/DeLP-Gen/blob/main/background.png?raw=true">
-DeLP-Gen
+    <img src="https://github.com/marioa-l/DeLP-Gen/blob/main/background.png?raw=true">
 </p>
 
 ## A DeLP program generator
-
+Aquí todo el texto que da la introducción al generador.
 # Features
 
 # Design
