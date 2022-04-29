@@ -1,4 +1,5 @@
 # DeLP-Gen
+![alt text](https://github.com/marioa-l/DeLP-Gen/blob/main/background.png?raw=true)
 
 ## A DeLP program generator
 
