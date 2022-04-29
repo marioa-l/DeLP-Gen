@@ -1,7 +1,8 @@
 <p align="center">
 <img src="https://github.com/marioa-l/DeLP-Gen/blob/main/background.png?raw=true">
-# DeLP-Gen
+DeLP-Gen
 </p>
+
 ## A DeLP program generator
 
 # Features
