@@ -1,10 +1,9 @@
-# <h1 align="center">DeLP-Gen</h1>
+# <h1 align="center">DeLP-Gen: A DeLP program generator</h1>
 <p align="center">
     <img src="https://github.com/marioa-l/DeLP-Gen/blob/main/background-remove.png?raw=true">
 </p>
 
-## A DeLP program generator
-Aquí todo el texto que da la introducción al generador.
+This project implement a principled approach to automatic generation of DeLP programs.
 # Features
 
 # Design
