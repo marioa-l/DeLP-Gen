@@ -1,6 +1,6 @@
-# <h1 align="center">DeLP-Gen: A DeLP program generator</h1>
+# <h1 align="center">DeLP-Gen: A DeLP Program Generator</h1>
 <p align="center">
-    <img width="400" height="400" src="https://github.com/marioa-l/DeLP-Gen/blob/main/background-remove.png?raw=true">
+    <img width="450" height="450" src="https://github.com/marioa-l/DeLP-Gen/blob/main/background-remove.png?raw=true">
 </p>
 
 This project implement a principled approach to automatic generation of DeLP programs.
