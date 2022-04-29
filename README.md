@@ -1,6 +1,6 @@
 # <h1 align="center">DeLP-Gen</h1>
 <p align="center">
-    <img src="https://github.com/marioa-l/DeLP-Gen/blob/main/background.png?raw=true">
+    <img src="https://github.com/marioa-l/DeLP-Gen/blob/main/background-remove.png?raw=true">
 </p>
 
 ## A DeLP program generator
