@@ -48,15 +48,11 @@ The value of the size and complexity metrics is shown for each of 3 cases of gen
 Size
 
 <img width="350" height="250" src="https://github.com/marioa-l/DeLP-Gen/blob/main/size.jpg?raw=true">
-</div>
 
-<div align="center">
 Complexity
 
 <img width="350" height="250" src="https://github.com/marioa-l/DeLP-Gen/blob/main/complexity.jpg?raw=true">
-</div>
 
-<div align="center">
 Time (sec.)
 
 <img width="350" height="250" src="https://github.com/marioa-l/DeLP-Gen/blob/main/time.jpg?raw=true">
