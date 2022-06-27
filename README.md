@@ -6,6 +6,10 @@
 This project implement a principled approach to automatic generation of DeLP programs.
 # Features
 
+- Create a set of `strict rules, defeasible rules, facts and assumptions` that can be applied for the generation of arguments and defeaters.
+- Offer a `parameterization` that allows obtaining DeLP programs with different metrics of `size` and `structural complexity`.
+- Generate a `minimum set` of facts and assumptions for the generation of arguments.
+- Generate `dialectical trees` for a subset of arguments
 # Design
 
 - Bottom-up approch
