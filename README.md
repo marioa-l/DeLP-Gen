@@ -45,6 +45,7 @@ The `arguments` are organized according to a `level` in the program. This level 
 The value of the size and complexity metrics is shown for each of 3 cases of generated DeLP programs.
 
 <div align="center">
+
 Size
 
 <img width="350" height="250" src="https://github.com/marioa-l/DeLP-Gen/blob/main/size.jpg?raw=true">
