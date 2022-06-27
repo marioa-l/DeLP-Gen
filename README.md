@@ -42,6 +42,16 @@ The `arguments` are organized according to a `level` in the program. This level 
 
 # Test
 
+The value of the size and complexity metrics is shown for each of 3 cases of generated DeLP programs.
+
+|  Size  |      Structural Complexity      |  Time (seg.) |
+|----------|:-------------:|------:|
+| <img width="250" height="200" src="https://github.com/marioa-l/DeLP-Gen/blob/main/size.jpg?raw=true"> |  <img width="250" height="200" src="https://github.com/marioa-l/DeLP-Gen/blob/main/complexity.jpg?raw=true"> | <img width="250" height="200" src="https://github.com/marioa-l/DeLP-Gen/blob/main/time.jpg?raw=true"> |
+
 # Tech
 
+This generator is fully developed using `python` and the `Numpy` library.
+
 # Licence
+
+GPL-3.0 license
