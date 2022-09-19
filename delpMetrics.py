@@ -272,7 +272,7 @@ class ComputeMetrics:
 
         spinner = Spinner("Processing")
         for count in range(dataset_length):
-            filePath = self.path_dataset + 'delp' + str(count) + '.delp'
+            filePath = self.path_dataset + str(count) + 'delp' + '.delp'
             self.path_delp = filePath
             data = self.load()
             arguments.append(data['n_arguments'])
