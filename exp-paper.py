@@ -19,8 +19,10 @@ import os
 import sys
 import json
 import copy
+import glob
 from generator import Generator
 from utils import *
+from delpMetrics import ComputeMetrics
 
 global dummyMode
 #dummyMode=True
@@ -83,7 +85,7 @@ params_steps = [2,0.1,0.1,0.1,1,1,1,1,1,1]
 #Utils
 utils = Utils()
 
-def generate_programs(dp: str, p_values: list):
+def generate_programs(dp: str, p_values: list) -> None:
     """
     Given a directory path and parameters, generate a number of programs in 
     that directory and with the specified parameters. Return the directory
@@ -105,14 +107,18 @@ def generate_programs(dp: str, p_values: list):
     params_to_gen = utils.get_data_from_file(dp + '/parameters.json')
     generator.generate(dp + '/', params_to_gen)
 
-# method2(<string>:fp) given a DELP filepath returns the list [M1, M2, M3, M4,..] of its exact metrics
-#def method2(fp):
-#	if(dummyMode):
-#		return [random.randint(0, 100000) for x in metrics]
-#	else:
-#		return "MARIO PLEASE CALL YOUR METHOD"
-#
-#
+def compute_metrics(dp: str) -> None:
+    """
+    Given a directory path of DeLP programs, compute and save the mean of its 
+    exacts metrics
+    Args:
+        dp: DeLP filepath to compute its exact metrics
+    """
+    metrics = ComputeMetrics(dp, 'metrics', dp, '')
+    n_programs = glob.glob(dp + "*.delp")
+    metrics.compute_dataset(len(n_programs))
+
+
 ## method3(<string>:fp) given a DELP filepath returns the running time in milliseconds needed to comptute the warrant statuses of all lits
 #def method3(fp):
 #	if(dummyMode):
@@ -273,5 +279,5 @@ def create_datasets(dp):
 #	print_matrix_plot(labels,matrix_cov,(dir+"plot_time_cov_"+k+".png"))
 
 # To test
-dp = '../dpgtest/'
-print(create_datasets(dp))
+dp = '../dpgtest/RAMIFICATION-9/'
+compute_metrics(dp)
