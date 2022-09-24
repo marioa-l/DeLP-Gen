@@ -143,12 +143,12 @@ def compute_metrics(dp: str) -> None:
         dp: DeLP filepath to compute its exact metrics
     """
     params_directory = os.listdir(dp)
-    print(params_directory)
-    print(len(params_directory))
-    sys.exit()
-    metrics = ComputeMetrics(dp, 'metrics', dp, '')
-    n_programs = glob.glob(dp + "*.delp")
-    metrics.compute_dataset(len(n_programs))
+    for param in params_directory:
+        variations = os.listdir(dp + param  + '/')
+        for value in variations:
+            metrics = ComputeMetrics(dp + param + '/' + value + '/', 'metrics', dp + param + '/' + value + '/', '')
+            n_programs = glob.glob(dp + param + "/" + value + "/*.delp")
+            metrics.compute_dataset(len(n_programs))
 
 
 #def retrive_params(fp):
@@ -272,5 +272,5 @@ def compute_metrics(dp: str) -> None:
 
 # To test
 dp = '../dpgtest/'
-create_datasets(dp)
+#create_datasets(dp)
 #compute_metrics(dp)
