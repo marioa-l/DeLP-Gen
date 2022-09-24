@@ -146,7 +146,8 @@ def compute_metrics(dp: str) -> None:
     for param in params_directory:
         variations = os.listdir(dp + param  + '/')
         for value in variations:
-            metrics = ComputeMetrics(dp + param + '/' + value + '/', 'metrics', dp + param + '/' + value + '/', '')
+            metrics = ComputeMetrics(dp + param + '/' + value + '/', 'metrics', 
+                                            dp + param + '/' + value + '/', '')
             n_programs = glob.glob(dp + param + "/" + value + "/*.delp")
             metrics.compute_dataset(len(n_programs))
 
