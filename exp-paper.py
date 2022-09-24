@@ -19,8 +19,10 @@ import os
 import sys
 import json
 import copy
+import glob
 from generator import Generator
 from utils import *
+from delpMetrics import ComputeMetrics
 
 global dummyMode
 #dummyMode=True
@@ -72,10 +74,10 @@ metrics=["n_rules",
        "tau"]
 
 # The minimum value for each parameters
-params_min = [1,0.1,0.1,0.1,1,1,1,2,1,1]
+params_min = [1,0.1,0.1,0.1,1,1,1,1,1,1]
 
-# The maximum value for each parameters
-params_max = [10,0.9,0.9,0.9,10,10,10,10,10,10]
+# The maximum value for each parameters (not inclusive)
+params_max = [11,1,1,1,11,11,11,11,11,11]
 
 # The parameter steps 
 params_steps = [2,0.1,0.1,0.1,1,1,1,1,1,1]
@@ -83,7 +85,7 @@ params_steps = [2,0.1,0.1,0.1,1,1,1,1,1,1]
 #Utils
 utils = Utils()
 
-def generate_programs(dp: str, p_values: list):
+def generate_programs(dp: str, p_values: list) -> None:
     """
     Given a directory path and parameters, generate a number of programs in 
     that directory and with the specified parameters. Return the directory
@@ -105,25 +107,6 @@ def generate_programs(dp: str, p_values: list):
     params_to_gen = utils.get_data_from_file(dp + '/parameters.json')
     generator.generate(dp + '/', params_to_gen)
 
-# method2(<string>:fp) given a DELP filepath returns the list [M1, M2, M3, M4,..] of its exact metrics
-#def method2(fp):
-#	if(dummyMode):
-#		return [random.randint(0, 100000) for x in metrics]
-#	else:
-#		return "MARIO PLEASE CALL YOUR METHOD"
-#
-#
-## method3(<string>:fp) given a DELP filepath returns the running time in milliseconds needed to comptute the warrant statuses of all lits
-#def method3(fp):
-#	if(dummyMode):
-#		return random.randint(0, 100000)
-#	else:
-#		return "MARIO PLEASE CALL YOUR METHOD"
-#
-#
-#########
-#########   From now on Gianni has the w-lock
-#########
 
 def create_datasets(dp):
     """
@@ -139,20 +122,35 @@ def create_datasets(dp):
         for i in range(len(params)):
             param_to_variate = params[i]
             param_path = dp + param_to_variate
+            os.mkdir(param_path)
             variation = list(np.arange(params_min[i], 
-                            params_max[i], 
+                            params_max[i],
                             params_steps[i]))
             variation = [int(value) if isinstance(value, np.integer) else 
                                 float(np.round(value,1)) for value in variation]
             p_values = copy.copy(params_min)
             for value in variation:
                 p_values[i] = value
-                generate_programs(param_path + '-' + str(value), p_values)
+                generate_programs(param_path + '/' + str(value), p_values)
         print("Dataset created")
 
-        #d_programs[params[i]]=[method1(dp + params[i] + str(x),[params_min[y] if y!=i else x for y in range(len(params))]) for x in range(params_min[i],params_max[i],params_steps[i])]
-#
-#
+
+def compute_metrics(dp: str) -> None:
+    """
+    Given a directory path of DeLP programs, compute and save the mean of its 
+    exacts metrics
+    Args:
+        dp: DeLP filepath to compute its exact metrics
+    """
+    params_directory = os.listdir(dp)
+    for param in params_directory:
+        variations = os.listdir(dp + param  + '/')
+        for value in variations:
+            metrics = ComputeMetrics(dp + param + '/' + value + '/', 'metrics', dp + param + '/' + value + '/', '')
+            n_programs = glob.glob(dp + param + "/" + value + "/*.delp")
+            metrics.compute_dataset(len(n_programs))
+
+
 #def retrive_params(fp):
 #    """
 #    Given a filepath string, it returns a list of paramenter used in generating 
@@ -274,4 +272,5 @@ def create_datasets(dp):
 
 # To test
 dp = '../dpgtest/'
-print(create_datasets(dp))
+#create_datasets(dp)
+#compute_metrics(dp)
