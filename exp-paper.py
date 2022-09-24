@@ -74,10 +74,10 @@ metrics=["n_rules",
        "tau"]
 
 # The minimum value for each parameters
-params_min = [1,0.1,0.1,0.1,1,1,1,2,1,1]
+params_min = [1,0.1,0.1,0.1,1,1,1,1,1,1]
 
-# The maximum value for each parameters
-params_max = [10,0.9,0.9,0.9,10,10,10,10,10,10]
+# The maximum value for each parameters (not inclusive)
+params_max = [11,1,1,1,11,11,11,11,11,11]
 
 # The parameter steps 
 params_steps = [2,0.1,0.1,0.1,1,1,1,1,1,1]
@@ -107,29 +107,6 @@ def generate_programs(dp: str, p_values: list) -> None:
     params_to_gen = utils.get_data_from_file(dp + '/parameters.json')
     generator.generate(dp + '/', params_to_gen)
 
-def compute_metrics(dp: str) -> None:
-    """
-    Given a directory path of DeLP programs, compute and save the mean of its 
-    exacts metrics
-    Args:
-        dp: DeLP filepath to compute its exact metrics
-    """
-    metrics = ComputeMetrics(dp, 'metrics', dp, '')
-    n_programs = glob.glob(dp + "*.delp")
-    metrics.compute_dataset(len(n_programs))
-
-
-## method3(<string>:fp) given a DELP filepath returns the running time in milliseconds needed to comptute the warrant statuses of all lits
-#def method3(fp):
-#	if(dummyMode):
-#		return random.randint(0, 100000)
-#	else:
-#		return "MARIO PLEASE CALL YOUR METHOD"
-#
-#
-#########
-#########   From now on Gianni has the w-lock
-#########
 
 def create_datasets(dp):
     """
@@ -145,20 +122,35 @@ def create_datasets(dp):
         for i in range(len(params)):
             param_to_variate = params[i]
             param_path = dp + param_to_variate
+            os.mkdir(param_path)
             variation = list(np.arange(params_min[i], 
-                            params_max[i], 
+                            params_max[i],
                             params_steps[i]))
             variation = [int(value) if isinstance(value, np.integer) else 
                                 float(np.round(value,1)) for value in variation]
             p_values = copy.copy(params_min)
             for value in variation:
                 p_values[i] = value
-                generate_programs(param_path + '-' + str(value), p_values)
+                generate_programs(param_path + '/' + str(value), p_values)
         print("Dataset created")
 
-        #d_programs[params[i]]=[method1(dp + params[i] + str(x),[params_min[y] if y!=i else x for y in range(len(params))]) for x in range(params_min[i],params_max[i],params_steps[i])]
-#
-#
+
+def compute_metrics(dp: str) -> None:
+    """
+    Given a directory path of DeLP programs, compute and save the mean of its 
+    exacts metrics
+    Args:
+        dp: DeLP filepath to compute its exact metrics
+    """
+    params_directory = os.listdir(dp)
+    print(params_directory)
+    print(len(params_directory))
+    sys.exit()
+    metrics = ComputeMetrics(dp, 'metrics', dp, '')
+    n_programs = glob.glob(dp + "*.delp")
+    metrics.compute_dataset(len(n_programs))
+
+
 #def retrive_params(fp):
 #    """
 #    Given a filepath string, it returns a list of paramenter used in generating 
@@ -279,5 +271,6 @@ def create_datasets(dp):
 #	print_matrix_plot(labels,matrix_cov,(dir+"plot_time_cov_"+k+".png"))
 
 # To test
-dp = '../dpgtest/RAMIFICATION-9/'
-compute_metrics(dp)
+dp = '../dpgtest/'
+create_datasets(dp)
+#compute_metrics(dp)
