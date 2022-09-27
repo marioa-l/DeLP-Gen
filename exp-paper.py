@@ -59,19 +59,27 @@ params = [
 
 """
 ### DeLP Metrics ###
-- n_rules: Total number of rules (srules and drules).
-- n_facts_pres: Number of facts and presumptions.
+- arguments: Number of arguments.
+- rules: Total number of rules (srules and drules).
+- facts_presum: Number of facts and presumptions.
 - mddl: Mean length of defeasible derivation of any argument.
 - h: Mean maximum length of argumentation lines.
 - t: Mean number of argument lines arising from an argument.
-- tau: Mean number of dialectical trees.
+- tau: Number of dialectical trees. (NOT IMPLEMENTED).
+- t_min: Time to respond to the status of the "simplest literal" in the program.
+- t_max: Time to respond to the status of the "most dificult" literal of the program.
+- t_mean: Average time to respond to a program literal.
 """
-metrics=["n_rules",
-       "n_facts_pres",
+metrics=["arguments",
+       "rules",
+       "facts_presum",
        "mddl",
        "h",
        "t",
-       "tau"]
+       "tau",
+       "t_min",
+       "t_max",
+       "t_mean"]
 
 # The minimum value for each parameters
 params_min = [1,0.1,0.1,0.1,1,1,1,1,1,1]
@@ -146,11 +154,26 @@ def compute_metrics(dp: str) -> None:
     for param in params_directory:
         variations = os.listdir(dp + param  + '/')
         for value in variations:
-            metrics = ComputeMetrics(dp + param + '/' + value + '/', 'metrics', 
-                                            dp + param + '/' + value + '/', '')
-            n_programs = glob.glob(dp + param + "/" + value + "/*.delp")
+            dataset_path = dp + param + '/' + value + '/'
+            metrics = ComputeMetrics(dataset_path, 'metrics', dataset_path, '')
+            n_programs = glob.glob(dataset_path + "*.delp")
             metrics.compute_dataset(len(n_programs))
 
+def analyze_metrics(parameter_directory: str) -> None:
+    """
+    Given the directory of a parameter, retrieve the metrics for each variation 
+    to create a csv and then generate the correlation matrices
+    Args:
+        parameter_directory: Directory of a parameter
+    """
+    
+    with open(csv_fp, 'w') as f:
+        writer = csv.writer(f)	
+        writer.writerow(params+metrics+["time"])
+        for k in d.keys():
+            for delp in d[k]:
+            writer.writerow(retrive_params(delp)+method2(delp)+[str(method3(delp))])
+        f.close()
 
 #def retrive_params(fp):
 #    """
@@ -272,6 +295,6 @@ def compute_metrics(dp: str) -> None:
 #	print_matrix_plot(labels,matrix_cov,(dir+"plot_time_cov_"+k+".png"))
 
 # To test
-dp = '../dpgtest/'
+#dp = '../dpgtest/'
 #create_datasets(dp)
 #compute_metrics(dp)
