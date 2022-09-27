@@ -72,14 +72,12 @@ params = [
 """
 metrics=["arguments",
        "rules",
-       "facts_presum",
+       "fact_preum",
        "mddl",
        "h",
        "t",
-       "tau",
-       "t_min",
-       "t_max",
-       "t_mean"]
+       "times"]
+#       "tau"]
 
 # The minimum value for each parameters
 params_min = [1,0.1,0.1,0.1,1,1,1,1,1,1]
@@ -158,112 +156,80 @@ def compute_metrics(dp: str) -> None:
             metrics = ComputeMetrics(dataset_path, 'metrics', dataset_path, '')
             n_programs = glob.glob(dataset_path + "*.delp")
             metrics.compute_dataset(len(n_programs))
+        print(param + ": Computed metrics")
+    print("All metrics were computed")
 
-def analyze_metrics(parameter_directory: str) -> None:
+
+def analyze_metrics(parameter_directory: str, parameter: str) -> None:
     """
     Given the directory of a parameter, retrieve the metrics for each variation 
     to create a csv and then generate the correlation matrices
     Args:
         parameter_directory: Directory of a parameter
+        parameter: Parameter to analyze
     """
-    
+    variations = os.listdir(parameter_directory)
+    csv_fp = parameter_directory + 'metrics_csv.csv'
     with open(csv_fp, 'w') as f:
         writer = csv.writer(f)	
-        writer.writerow(params+metrics+["time"])
-        for k in d.keys():
-            for delp in d[k]:
-            writer.writerow(retrive_params(delp)+method2(delp)+[str(method3(delp))])
+        writer.writerow(params + metrics)
+        for variation in variations:
+            path = parameter_directory + variation + '/'
+            load_params = json.load(open(path + 'parameters.json')) 
+            load_metrics = json.load(open(path + 'metrics.json'))
+            value_params = [load_params[p] for p in params]
+            value_metrics = [load_metrics[m] for m in metrics if m != 'times']
+            value_metrics.append(load_metrics['times']['mean'])
+            writer.writerow(value_params + value_metrics)
         f.close()
-
-#def retrive_params(fp):
-#    """
-#    Given a filepath string, it returns a list of paramenter used in generating 
-#    that delp program
-#    """
-#	return fp[fp.find("[")+1:fp.rfind("]")].split(",")
-#
-#
-#def generate_csv(d,csv_fp):
-#    """
-#    Given the dictionary d_programs it computes the csv for each program. 
-#    A filepath for csv is needed as input
-#    """
-#    with open(csv_fp, 'w') as f:
-#    writer = csv.writer(f)	
-#    writer.writerow(params+metrics+["time"])
-#    for k in d.keys():
-#	    for delp in d[k]:
-#		    writer.writerow(retrive_params(delp)+method2(delp)+[str(method3(delp))])
-#	f.close()
-#
-#
-#def print_matrix_plot(labels,matrix,filepath):
-#    """
-#    ???
-#    """
-#	fig_cor, axes_cor = plt.subplots(1,1)
-#	fig_cor.set_size_inches(6, 6)
-#	myimage = axes_cor.imshow(matrix)
-#	plt.colorbar(myimage)
-#	axes_cor.set_xticks(np.arange(0,matrix.shape[0], matrix.shape[0]*1.0/len(labels)))
-#	axes_cor.set_yticks(np.arange(0,matrix.shape[1], matrix.shape[1]*1.0/len(labels)))
-#	axes_cor.set_xticklabels(labels)
-#	axes_cor.set_yticklabels(labels)
-#	plt.draw()
-#	plt.savefig(filepath)
+    
+    # To draw and save correlation matrix
+    data_csv = pd.read_csv(parameter_directory + 'metrics_csv.csv')
+    p_csv = data_csv[[parameter] + metrics]
+    labels = [parameter] + metrics
+    
+    #MATRIXES
+    matrix_pearson = p_csv.corr(method='pearson')
+    matrix_kendall = p_csv.corr(method='kendall')
+    matrix_spearman = p_csv.corr(method='spearman')
+    matrix_cov = p_csv.cov()
+    
+    #PRINT THE PLOTS FOR EACH PARAMETER
+    print_matrix_plot(labels,matrix_pearson,(parameter_directory+"plot_pearson_"+parameter+".png"))
+    print_matrix_plot(labels,matrix_kendall,(parameter_directory+"plot_kendall_"+parameter+".png"))
+    print_matrix_plot(labels,matrix_spearman,(parameter_directory+"plot_spearman_"+parameter+".png"))
+    print_matrix_plot(labels,matrix_cov,(parameter_directory+"plot_cov_"+parameter+".png"))
 
 
-######
-###### CREATING THE DATASET
-######
-#d=create_datasets()
+def print_matrix_plot(labels,matrix,filepath):
+    fig_cor, axes_cor = plt.subplots(1,1)
+    fig_cor.set_size_inches(12, 12)
+    myimage = axes_cor.imshow(matrix)
+    plt.colorbar(myimage)
+    axes_cor.set_xticks(np.arange(0,matrix.shape[0], matrix.shape[0]*1.0/len(labels)))
+    axes_cor.set_yticks(np.arange(0,matrix.shape[1], matrix.shape[1]*1.0/len(labels)))
+    axes_cor.set_xticklabels(labels)
+    axes_cor.set_yticklabels(labels)
+    plt.draw()
+    plt.savefig(filepath)
 
 
-######
-###### GENERATING CSV
-######
-#generate_csv(create_datasets(), dir+"delpGeneratorMario.csv")
+def run_exp(dp: str) -> None:
+    """
+    Main procedure: Generate and compute dataset of DeLP programs
+    """
+    # Create datasets
+    create_datasets(dp)
+    # Compute metrics
+    compute_metrics(dp)
+    
+    # To analyze correlations
+    parameters = os.listdir(dp)
+    for parameter in parameters:
+        analyze_metrics(dp + parameter + '/', parameter)
+    print("Complete")
 
 
-######
-###### GENERATING PLOTS FOR STEP 1
-######
-#n_p=0
-#for k in d.keys():
-#	parameter_k=[x for x in range(params_min[n_p],params_max[n_p]+1,params_steps[n_p])]
-#	data = {k: parameter_k}
-#	for m in metrics:
-#		data[m]=[]
-#	data["time"]=[]
-#	for delp in d[k]:
-#		metrics_d_k=method2(delp)
-#		for i in range(len(metrics_d_k)):
-#			data[metrics[i]].append(metrics_d_k[i])
-#		data["time"].append(method3(delp))
-#	n_p=n_p+1
-#
-#	#
-#	#PLOT
-#	#
-#
-#	#DATAFRAME
-#	labels=[k]+metrics+["time"]
-#	df = pd.DataFrame(data,columns=labels)
-#
-#	#MATRIXES
-#	matrix_pearson = df.corr(method='pearson')
-#	#matrix_kendall = df.corr(method='kendall')
-#	matrix_spearman = df.corr(method='spearman')
-#	matrix_cov = df.cov()
-#
-#	#PRINT THE PLOTS FOR EACH PARAMETER
-#	print_matrix_plot(labels,matrix_pearson,(dir+"plot_pearson_"+k+".png"))
-#	#print_matrix_plot(labels,matrix_kendall,(dir+"plot_kendall_"+k+".png"))
-#	print_matrix_plot(labels,matrix_spearman,(dir+"plot_spearman_"+k+".png"))
-#	print_matrix_plot(labels,matrix_cov,(dir+"plot_cov_"+k+".png"))
-#	
-#	
-#
 #######
 ####### GENERATING PLOTS FOR STEP 2  (i.e., TIMES of the whole dataset over metrics)
 #######
@@ -295,6 +261,5 @@ def analyze_metrics(parameter_directory: str) -> None:
 #	print_matrix_plot(labels,matrix_cov,(dir+"plot_time_cov_"+k+".png"))
 
 # To test
-#dp = '../dpgtest/'
-#create_datasets(dp)
-#compute_metrics(dp)
+dp = sys.argv[1] 
+run_exp(dp)
