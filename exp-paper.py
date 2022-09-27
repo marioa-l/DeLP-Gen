@@ -227,7 +227,8 @@ def run_exp(dp: str) -> None:
     parameters = os.listdir(dp)
     for parameter in parameters:
         analyze_metrics(dp + parameter + '/', parameter)
-    print("Complete")
+        print(paramter + " Complete")
+    print("All Complete")
 
 
 #######
