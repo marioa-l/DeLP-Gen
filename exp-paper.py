@@ -83,7 +83,7 @@ metrics=["arguments",
 params_min = [1,0.1,0.1,0.1,1,1,1,1,1,1]
 
 # The maximum value for each parameters (not inclusive)
-params_max = [11,1,1,1,11,11,11,11,11,11]
+params_max = [11,1.0,1.0,1.0,11,11,11,11,11,11]
 
 # The parameter steps 
 params_steps = [2,0.1,0.1,0.1,1,1,1,1,1,1]
@@ -134,7 +134,8 @@ def create_datasets(dp):
                             params_steps[i]))
             variation = [int(value) if isinstance(value, np.integer) else 
                                 float(np.round(value,1)) for value in variation]
-            p_values = copy.copy(params_min)
+            #p_values = copy.copy(params_min)
+            p_values = [int(value/2) if isinstance(value, int) else value/2 for value in params_max]
             for value in variation:
                 p_values[i] = value
                 generate_programs(param_path + '/' + str(value), p_values)
