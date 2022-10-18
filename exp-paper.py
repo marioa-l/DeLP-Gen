@@ -83,10 +83,17 @@ metrics=["arguments",
 params_min = [1,0.1,0.1,0.1,1,1,1,1,1,1]
 
 # The maximum value for each parameters (not inclusive)
-params_max = [11,1.0,1.0,1.0,11,11,11,11,11,11]
+params_max = [5,1.0,1.0,1.0,5,5,5,5,5,5]
 
 # The parameter steps 
-params_steps = [2,0.1,0.1,0.1,1,1,1,1,1,1]
+params_steps = [1,0.1,0.1,0.1,1,1,1,1,1,1]
+
+# The parameter values for non-variable param
+params_default_min = [2,0.2,0.2,0.2,2,2,2,2,2,2]
+
+params_default_med = [3,0.5,0.5,0.5,3,3,3,3,3,3]
+
+params_default_max = [5,0.8,0.8,0.8,5,5,5,5,5,5]
 
 #Utils
 utils = Utils()
@@ -134,8 +141,7 @@ def create_datasets(dp):
                             params_steps[i]))
             variation = [int(value) if isinstance(value, np.integer) else 
                                 float(np.round(value,1)) for value in variation]
-            #p_values = copy.copy(params_min)
-            p_values = [int(value/2) if isinstance(value, int) else value/2 for value in params_max]
+            p_values = copy.copy(params_default_min)
             for value in variation:
                 p_values[i] = value
                 generate_programs(param_path + '/' + str(value), p_values)
@@ -263,5 +269,5 @@ def run_exp(dp: str) -> None:
 #	print_matrix_plot(labels,matrix_cov,(dir+"plot_time_cov_"+k+".png"))
 
 # To test
-dp = sys.argv[1] 
+dp1 = sys.argv[1] 
 run_exp(dp)
