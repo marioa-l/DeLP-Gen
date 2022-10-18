@@ -269,5 +269,5 @@ def run_exp(dp: str) -> None:
 #	print_matrix_plot(labels,matrix_cov,(dir+"plot_time_cov_"+k+".png"))
 
 # To test
-dp1 = sys.argv[1] 
+dp = sys.argv[1] 
 run_exp(dp)
