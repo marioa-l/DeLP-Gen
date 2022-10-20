@@ -74,6 +74,7 @@ class ComputeMetrics:
         in self.path_delp
         """
         delpProgram = self.path_delp
+        print("Program: ", delpProgram)
         cmd = ['./globalCore', 'file', delpProgram, 'all']
         try:
             output = check_output(cmd, stderr=STDOUT). \
@@ -118,7 +119,7 @@ class ComputeMetrics:
         return line
         
 
-    def analyze_results(self, result):
+    def analyze_results(self, result,defs,id_p):
         n_arguments = 0.0
         n_defeaters = 0.0
         avg_def_rules = 0.0
@@ -126,6 +127,7 @@ class ComputeMetrics:
         avg_height_lines = 0.0
         avg_arg_lines = 0.0
         tree_numbers = 0
+        args_defs = {}
         ### Arguemnts, MDDL and Defeaters section ###
         dGraphs_data = result['dGraph']
         n_def_rules = 0  # To compute the average of defeasible rules
@@ -143,6 +145,8 @@ class ComputeMetrics:
                         n_arguments += 1  
                         n_def_rules += def_rules_in_body - delete_presum
                         defeaters = argument[argument_key]['defeats']
+                        if defs:
+                            args_defs[argument_key] = defeaters
                         n_defeaters += len(defeaters)
                     
         if n_arguments != 0:
@@ -179,6 +183,9 @@ class ComputeMetrics:
             avg_height_lines = sum_height_lines / n_arg_lines
         if tree_numbers != 0.0:
             avg_arg_lines = n_arg_lines / tree_numbers   # N° lines / N° Trees
+        # To save the arguments and its defeaters
+        if defs:
+            self.utils.write_result(self.path_file_results + id_p +'OUTPUT.json', args_defs)
         return {
             'n_arguments': int(n_arguments),
             'n_defeaters': int(n_defeaters),
@@ -188,7 +195,7 @@ class ComputeMetrics:
         }
 
 
-    def load(self):
+    def load(self,defs, id_p):
         initial_time = time.time()
         core_response = self.query_delp_solver()
         end_time = time.time()
@@ -196,7 +203,7 @@ class ComputeMetrics:
         self.times.append(query_time)
         if core_response != "Error":
             size_metrics = self.get_size_metrics()
-            result = self.analyze_results(core_response)
+            result = self.analyze_results(core_response,defs,id_p)
             self.rules.append(size_metrics[0])
             self.fact_presum.append(size_metrics[1])
             return result
@@ -210,7 +217,7 @@ class ComputeMetrics:
                 }
 
 
-    def compute_one(self) -> None:
+    def compute_one(self, defs) -> None:
         self.aux_height = []
         
         arguments = []
@@ -218,7 +225,7 @@ class ComputeMetrics:
         def_rules = []
         arg_lines = []
         height_lines = [] 
-        data = self.load()
+        data = self.load(defs,'0')
         arguments.append(data['n_arguments'])
         defeaters.append(data['n_defeaters'])
         def_rules.append(data['avg_def_rules'])
@@ -261,7 +268,7 @@ class ComputeMetrics:
         self.utils.write_result(self.build_path_result(), results)
 
 
-    def compute_dataset(self, dataset_length):
+    def compute_dataset(self, dataset_length,defs):
         global height_lines
 
         arguments = []
@@ -274,7 +281,7 @@ class ComputeMetrics:
         for count in range(dataset_length):
             filePath = self.path_dataset + str(count) + 'delp' + '.delp'
             self.path_delp = filePath
-            data = self.load()
+            data = self.load(defs,str(count))
             arguments.append(data['n_arguments'])
             defeaters.append(data['n_defeaters'])
             def_rules.append(data['avg_def_rules'])

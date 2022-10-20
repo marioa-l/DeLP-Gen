@@ -83,7 +83,7 @@ metrics=["arguments",
 params_min = [1,0.1,0.1,0.1,1,1,1,1,1,1]
 
 # The maximum value for each parameters (not inclusive)
-params_max = [5,1.0,1.0,1.0,5,5,5,5,5,5]
+params_max = [4,1.0,1.0,1.0,4,4,4,4,4,4]
 
 # The parameter steps 
 params_steps = [1,0.1,0.1,0.1,1,1,1,1,1,1]
@@ -176,6 +176,8 @@ def analyze_metrics(parameter_directory: str, parameter: str) -> None:
         parameter: Parameter to analyze
     """
     variations = os.listdir(parameter_directory)
+    print("Params: ", paramter)
+    print("Variation: ", variations)
     csv_fp = parameter_directory + 'metrics_csv.csv'
     with open(csv_fp, 'w') as f:
         writer = csv.writer(f)	

@@ -49,7 +49,7 @@ class Utils:
             -result: The json data to be saved
         """
         with open(path_file, 'w') as output:
-            json.dump(result, output)
+            json.dump(result, output, indent=4)
 
     
     def get_data_from_file(self, path_file: str) -> json:
