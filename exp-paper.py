@@ -23,6 +23,7 @@ import glob
 from generator import Generator
 from utils import *
 from delpMetrics import ComputeMetrics
+import seaborn as sns
 
 global dummyMode
 #dummyMode=True
@@ -30,7 +31,7 @@ dummyMode=False
 
 # Number of programs to generate for each value variation
 global n_programs
-n_programs = 10
+n_programs = 100
 
 """
 ### DPG Parameters ###
@@ -83,13 +84,13 @@ metrics=["arguments",
 params_min = [1,0.1,0.1,0.1,1,1,1,1,1,1]
 
 # The maximum value for each parameters (not inclusive)
-params_max = [4,1.0,1.0,1.0,4,4,4,4,4,4]
+params_max = [10,1.0,1.0,1.0,4,4,4,4,4,4]
 
 # The parameter steps 
 params_steps = [1,0.1,0.1,0.1,1,1,1,1,1,1]
 
 # The parameter values for non-variable param
-params_default_min = [2,0.2,0.2,0.2,2,2,2,2,2,2]
+params_default_min = [2,0.2,0.2,0.2,1,1,1,2,2,2]
 
 params_default_med = [3,0.5,0.5,0.5,3,3,3,3,3,3]
 
@@ -162,7 +163,7 @@ def compute_metrics(dp: str) -> None:
             dataset_path = dp + param + '/' + value + '/'
             metrics = ComputeMetrics(dataset_path, 'metrics', dataset_path, '')
             n_programs = glob.glob(dataset_path + "*.delp")
-            metrics.compute_dataset(len(n_programs))
+            metrics.compute_dataset(len(n_programs),False)
         print(param + ": Computed metrics")
     print("All metrics were computed")
 
@@ -175,14 +176,13 @@ def analyze_metrics(parameter_directory: str, parameter: str) -> None:
         parameter_directory: Directory of a parameter
         parameter: Parameter to analyze
     """
-    variations = os.listdir(parameter_directory)
-    print("Params: ", paramter)
-    print("Variation: ", variations)
+    variations = os.walk(parameter_directory)
+    print("Param: ", parameter)
     csv_fp = parameter_directory + 'metrics_csv.csv'
     with open(csv_fp, 'w') as f:
         writer = csv.writer(f)	
         writer.writerow(params + metrics)
-        for variation in variations:
+        for variation in next(variations)[1]:
             path = parameter_directory + variation + '/'
             load_params = json.load(open(path + 'parameters.json')) 
             load_metrics = json.load(open(path + 'metrics.json'))
@@ -228,47 +228,16 @@ def run_exp(dp: str) -> None:
     Main procedure: Generate and compute dataset of DeLP programs
     """
     # Create datasets
-    create_datasets(dp)
+    #create_datasets(dp)
     # Compute metrics
-    compute_metrics(dp)
+    #compute_metrics(dp)
     
     # To analyze correlations
     parameters = os.listdir(dp)
     for parameter in parameters:
         analyze_metrics(dp + parameter + '/', parameter)
-        print(paramter + " Complete")
+        print(parameter + " Complete")
     print("All Complete")
-
-
-#######
-####### GENERATING PLOTS FOR STEP 2  (i.e., TIMES of the whole dataset over metrics)
-#######
-#for k in d.keys():
-#	data = {m:[] for m in metrics}
-#	data["time"]=[]
-#	for delp in d[k]:
-#		metrics_d_k=method2(delp)
-#		for i in range(len(metrics_d_k)):
-#			data[metrics[i]].append(metrics_d_k[i])
-#		data["time"].append(method3(delp))
-#
-#
-#	#PLOT
-#	labels=metrics+["time"]
-#	df = pd.DataFrame(data,columns=labels)
-#	
-#	#MATRIXES
-#	matrix_pearson = df.corr(method='pearson')
-#	#matrix_kendall = df.corr(method='kendall')
-#	matrix_spearman = df.corr(method='spearman')
-#	matrix_cov = df.cov()
-#
-#
-#	#PRINT THE PLOTS FOR EACH PARAMETER
-#	print_matrix_plot(labels,matrix_pearson,(dir+"plot_time_pearson_"+k+".png"))
-#	#print_matrix_plot(labels,matrix_kendall,(dir+"plot_time_kendall_"+k+".png"))
-#	print_matrix_plot(labels,matrix_spearman,(dir+"plot_time_spearman_"+k+".png"))
-#	print_matrix_plot(labels,matrix_cov,(dir+"plot_time_cov_"+k+".png"))
 
 # To test
 dp = sys.argv[1] 
