@@ -24,6 +24,8 @@ from generator import Generator
 from utils import *
 from delpMetrics import ComputeMetrics
 import seaborn as sns
+from sklearn.preprocessing import StandardScaler
+from matplotlib import colors
 
 global dummyMode
 #dummyMode=True
@@ -31,7 +33,7 @@ dummyMode=False
 
 # Number of programs to generate for each value variation
 global n_programs
-n_programs = 100
+n_programs = 5
 
 """
 ### DPG Parameters ###
@@ -84,17 +86,17 @@ metrics=["arguments",
 params_min = [1,0.1,0.1,0.1,1,1,1,1,1,1]
 
 # The maximum value for each parameters (not inclusive)
-params_max = [10,1.0,1.0,1.0,4,4,4,4,4,4]
+params_max = [10,1.0,1.0,1.0,5,5,5,5,5,5]
 
 # The parameter steps 
 params_steps = [1,0.1,0.1,0.1,1,1,1,1,1,1]
 
 # The parameter values for non-variable param
-params_default_min = [2,0.2,0.2,0.2,1,1,1,2,2,2]
+params_default_min = [2,0.2,0.2,0.2,2,2,2,2,2,2]
 
-params_default_med = [3,0.5,0.5,0.5,3,3,3,3,3,3]
+params_default_med = [5,0.5,0.5,0.5,5,5,5,5,5,5]
 
-params_default_max = [5,0.8,0.8,0.8,5,5,5,5,5,5]
+params_default_max = [10,1,1,1,10,10,10,10,10,10]
 
 #Utils
 utils = Utils()
@@ -196,29 +198,46 @@ def analyze_metrics(parameter_directory: str, parameter: str) -> None:
     data_csv = pd.read_csv(parameter_directory + 'metrics_csv.csv')
     p_csv = data_csv[[parameter] + metrics]
     labels = [parameter] + metrics
-    
     #MATRIXES
     matrix_pearson = p_csv.corr(method='pearson')
-    matrix_kendall = p_csv.corr(method='kendall')
-    matrix_spearman = p_csv.corr(method='spearman')
-    matrix_cov = p_csv.cov()
+    #matrix_kendall = p_csv.corr(method='kendall')
+    #matrix_spearman = p_csv.corr(method='spearman')
+    #matrix_cov = p_csv.cov()
     
     #PRINT THE PLOTS FOR EACH PARAMETER
     print_matrix_plot(labels,matrix_pearson,(parameter_directory+"plot_pearson_"+parameter+".png"))
-    print_matrix_plot(labels,matrix_kendall,(parameter_directory+"plot_kendall_"+parameter+".png"))
-    print_matrix_plot(labels,matrix_spearman,(parameter_directory+"plot_spearman_"+parameter+".png"))
-    print_matrix_plot(labels,matrix_cov,(parameter_directory+"plot_cov_"+parameter+".png"))
+    #print_matrix_plot(labels,matrix_kendall,(parameter_directory+"plot_kendall_"+parameter+".png"))
+    #print_matrix_plot(labels,matrix_spearman,(parameter_directory+"plot_spearman_"+parameter+".png"))
+    #print_matrix_plot(labels,matrix_cov,(parameter_directory+"plot_cov_"+parameter+".png"))
 
 
 def print_matrix_plot(labels,matrix,filepath):
     fig_cor, axes_cor = plt.subplots(1,1)
     fig_cor.set_size_inches(12, 12)
-    myimage = axes_cor.imshow(matrix)
-    plt.colorbar(myimage)
+    cmap = colors.ListedColormap(['red','white','green'])
+    bounds = [-0.99,-0.5,0.5,0.99]
+    norm = colors.BoundaryNorm(bounds, cmap.N)
+    #plt.figure(figsize=(12,12), facecolor='w',edgecolor='k')
+    #sns.set(font_scale=1.2)
+    mask_1 = np.triu(np.ones_like(matrix, dtype=bool))
+    #sns.heatmap(matrix_pearson, cmap=cmap,
+    #            center=0,
+    #            annot=True,
+    #            fmt='.1g',
+    #            mask=mask_1,
+    #            norm=norm)
+    img = axes_cor.imshow(matrix, cmap=cmap, norm=norm)
+    #aux = axes_cor[1].imshow(mask_1)
+    # make a color bar
+    plt.colorbar(img, cmap=cmap, norm=norm, boundaries=bounds, ticks=[-0.99, -0.5,0.5, 0.99])
+    
+    #plt.savefig('redwhite.png')
+    
     axes_cor.set_xticks(np.arange(0,matrix.shape[0], matrix.shape[0]*1.0/len(labels)))
     axes_cor.set_yticks(np.arange(0,matrix.shape[1], matrix.shape[1]*1.0/len(labels)))
     axes_cor.set_xticklabels(labels)
     axes_cor.set_yticklabels(labels)
+    #plt.show()
     plt.draw()
     plt.savefig(filepath)
 
@@ -230,7 +249,7 @@ def run_exp(dp: str) -> None:
     # Create datasets
     #create_datasets(dp)
     # Compute metrics
-    #compute_metrics(dp)
+    compute_metrics(dp)
     
     # To analyze correlations
     parameters = os.listdir(dp)

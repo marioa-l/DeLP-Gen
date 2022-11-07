@@ -5,6 +5,7 @@ from progress.spinner import Spinner
 from subprocess import STDOUT, check_output
 from utils import *
 import re
+import random
 
 class ComputeMetrics:
     
@@ -68,6 +69,13 @@ class ComputeMetrics:
             return "Error"
 
 
+    def get_random_querys(self, literals_dicts):
+        literals = []
+        for level, lits in literals_dicts.items():
+            literals.append(random.choice(lits))
+        return literals
+
+
     def query_delp_solver(self) -> json:
         """
         Call to delp solver to get all answers for the delp program
@@ -75,7 +83,12 @@ class ComputeMetrics:
         """
         delpProgram = self.path_delp
         print("Program: ", delpProgram)
-        cmd = ['./globalCore', 'file', delpProgram, 'all']
+        delpProgram_json = delpProgram.replace(".delp",".json")
+        program_literals = self.utils.get_data_from_file(delpProgram_json)["literals"]
+        literals_to_query = self.get_random_querys(program_literals)
+        print(literals_to_query)
+        exit()
+        cmd = ['./globalCore', 'file', delpProgram, literals_to_query]
         try:
             output = check_output(cmd, stderr=STDOUT). \
                 decode(sys.stdout.encoding)
