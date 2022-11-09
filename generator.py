@@ -586,7 +586,7 @@ class Generator:
         program.append('')
         for key, value in self.levels.items():
             kb_level = str(key)
-            program.append('/*** KB LEVEL = ' + kb_level + ' ***/')
+            program.append('\n\n\n\n/*** KB LEVEL = ' + kb_level + ' ***/')
             for drule in value['drules']:
                 rule = self.create_def_rule(drule[0], drule[1])
                 if rule not in program:

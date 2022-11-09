@@ -71,9 +71,13 @@ class ComputeMetrics:
 
     def get_random_querys(self, literals_dicts):
         literals = []
+        in_string_literals = '['
         for level, lits in literals_dicts.items():
-            literals.append(random.choice(lits))
-        return literals
+            lit = random.choice(lits)
+            literals.append(lit)
+            in_string_literals += lit + ','
+        in_string_literals = in_string_literals[:-1] + ']'
+        return [in_string_literals, literals]
 
 
     def query_delp_solver(self) -> json:
@@ -82,21 +86,20 @@ class ComputeMetrics:
         in self.path_delp
         """
         delpProgram = self.path_delp
-        print("Program: ", delpProgram)
+        print("\nProgram: ", delpProgram)
         delpProgram_json = delpProgram.replace(".delp",".json")
         program_literals = self.utils.get_data_from_file(delpProgram_json)["literals"]
         literals_to_query = self.get_random_querys(program_literals)
-        print(literals_to_query)
-        exit()
-        cmd = ['./globalCore', 'file', delpProgram, literals_to_query]
+        print(literals_to_query[0])
+        cmd = ['./globalCore', 'file', delpProgram, literals_to_query[0]]
         try:
-            output = check_output(cmd, stderr=STDOUT). \
+            output = check_output(cmd, stderr=STDOUT, timeout=60). \
                 decode(sys.stdout.encoding)
             result = json.loads(output)
             return result
         except Exception as e:
-            print(e)
-            return "Error"
+            print("TimeOut")
+            return json.loads('{"status":"","dGraph":""}')
 
 
     def get_size_metrics(self) -> list:
@@ -290,7 +293,7 @@ class ComputeMetrics:
         arg_lines = []
         height_lines = []
 
-        spinner = Spinner("Processing")
+        #spinner = Spinner("Processing")
         for count in range(dataset_length):
             filePath = self.path_dataset + str(count) + 'delp' + '.delp'
             self.path_delp = filePath
@@ -300,7 +303,7 @@ class ComputeMetrics:
             def_rules.append(data['avg_def_rules'])
             arg_lines.append(data['avg_arg_lines'])
             height_lines.append(data['avg_height_lines'])
-            spinner.next()
+            #spinner.next()
         
         self.compute_save_metrics(arguments, def_rules, arg_lines, 
                                     height_lines, self.times,

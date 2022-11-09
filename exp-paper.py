@@ -179,7 +179,6 @@ def analyze_metrics(parameter_directory: str, parameter: str) -> None:
         parameter: Parameter to analyze
     """
     variations = os.walk(parameter_directory)
-    print("Param: ", parameter)
     csv_fp = parameter_directory + 'metrics_csv.csv'
     with open(csv_fp, 'w') as f:
         writer = csv.writer(f)	
@@ -214,30 +213,35 @@ def analyze_metrics(parameter_directory: str, parameter: str) -> None:
 def print_matrix_plot(labels,matrix,filepath):
     fig_cor, axes_cor = plt.subplots(1,1)
     fig_cor.set_size_inches(12, 12)
-    cmap = colors.ListedColormap(['red','white','green'])
-    bounds = [-0.99,-0.5,0.5,0.99]
-    norm = colors.BoundaryNorm(bounds, cmap.N)
+    #cmap = colors.ListedColormap(['red','white','green'])
+    
+    #bounds = [-0.99,-0.5,0.5,0.99]
+    #norm = colors.BoundaryNorm(bounds, cmap.N)
     #plt.figure(figsize=(12,12), facecolor='w',edgecolor='k')
     #sns.set(font_scale=1.2)
-    mask_1 = np.triu(np.ones_like(matrix, dtype=bool))
+    #mask_1 = np.triu(np.ones_like(matrix, dtype=bool))
     #sns.heatmap(matrix_pearson, cmap=cmap,
     #            center=0,
     #            annot=True,
     #            fmt='.1g',
     #            mask=mask_1,
     #            norm=norm)
-    img = axes_cor.imshow(matrix, cmap=cmap, norm=norm)
+    
+    #img = axes_cor.imshow(matrix, cmap=cmap, norm=norm)
+    img = axes_cor.imshow(matrix, cmap=plt.cm.get_cmap('Greens', 10), vmin=-1, vmax=1)
+    
     #aux = axes_cor[1].imshow(mask_1)
     # make a color bar
-    plt.colorbar(img, cmap=cmap, norm=norm, boundaries=bounds, ticks=[-0.99, -0.5,0.5, 0.99])
     
+    #plt.colorbar(img, cmap=cmap, norm=norm, boundaries=bounds, ticks=[-0.99, -0.5,0.5, 0.99])
+    plt.colorbar(img)
     #plt.savefig('redwhite.png')
     
     axes_cor.set_xticks(np.arange(0,matrix.shape[0], matrix.shape[0]*1.0/len(labels)))
     axes_cor.set_yticks(np.arange(0,matrix.shape[1], matrix.shape[1]*1.0/len(labels)))
     axes_cor.set_xticklabels(labels)
     axes_cor.set_yticklabels(labels)
-    #plt.show()
+    plt.show()
     plt.draw()
     plt.savefig(filepath)
 
@@ -249,13 +253,14 @@ def run_exp(dp: str) -> None:
     # Create datasets
     #create_datasets(dp)
     # Compute metrics
-    compute_metrics(dp)
+    #compute_metrics(dp)
     
     # To analyze correlations
     parameters = os.listdir(dp)
     for parameter in parameters:
+        print("Starting with parameter " + parameter)
         analyze_metrics(dp + parameter + '/', parameter)
-        print(parameter + " Complete")
+        print("\n complete")
     print("All Complete")
 
 # To test
