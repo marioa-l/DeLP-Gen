@@ -215,6 +215,10 @@ def print_matrix_plot(labels,matrix,filepath):
     fig_cor.set_size_inches(12, 12)
     #cmap = colors.ListedColormap(['red','white','green'])
     
+    mask =  np.tri(matrix.shape[0], k=-1)
+    matrix = np.ma.array(matrix, mask=mask) # mask out the lower triangle
+
+
     #bounds = [-0.99,-0.5,0.5,0.99]
     #norm = colors.BoundaryNorm(bounds, cmap.N)
     #plt.figure(figsize=(12,12), facecolor='w',edgecolor='k')
@@ -241,7 +245,7 @@ def print_matrix_plot(labels,matrix,filepath):
     axes_cor.set_yticks(np.arange(0,matrix.shape[1], matrix.shape[1]*1.0/len(labels)))
     axes_cor.set_xticklabels(labels)
     axes_cor.set_yticklabels(labels)
-    plt.show()
+    #plt.show()
     plt.draw()
     plt.savefig(filepath)
 
