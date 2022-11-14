@@ -232,7 +232,7 @@ def print_matrix_plot(labels,matrix,filepath):
     #            norm=norm)
     
     #img = axes_cor.imshow(matrix, cmap=cmap, norm=norm)
-    img = axes_cor.imshow(matrix, cmap=plt.cm.get_cmap('Greens', 10), vmin=-1, vmax=1)
+    img = axes_cor.imshow(matrix, cmap=plt.cm.get_cmap('RdYlGn', 10), vmin=-1, vmax=1)
     
     #aux = axes_cor[1].imshow(mask_1)
     # make a color bar
