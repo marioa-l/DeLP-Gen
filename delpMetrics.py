@@ -87,13 +87,14 @@ class ComputeMetrics:
         """
         delpProgram = self.path_delp
         print("\nProgram: ", delpProgram)
-        delpProgram_json = delpProgram.replace(".delp",".json")
-        program_literals = self.utils.get_data_from_file(delpProgram_json)["literals"]
-        literals_to_query = self.get_random_querys(program_literals)
-        print(literals_to_query[0])
-        cmd = ['./globalCore', 'file', delpProgram, literals_to_query[0]]
+        #delpProgram_json = delpProgram.replace(".delp",".json")
+        #program_literals = self.utils.get_data_from_file(delpProgram_json)["literals"]
+        #literals_to_query = self.get_random_querys(program_literals)
+        #print(literals_to_query[0])
+        #cmd = ['./globalCore', 'file', delpProgram, literals_to_query[0]]
+        cmd = ['./globalCore', 'file', delpProgram, 'all']
         try:
-            output = check_output(cmd, stderr=STDOUT, timeout=60). \
+            output = check_output(cmd, stderr=STDOUT, timeout=20). \
                 decode(sys.stdout.encoding)
             result = json.loads(output)
             return result
