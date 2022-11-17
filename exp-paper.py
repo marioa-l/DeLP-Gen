@@ -29,11 +29,11 @@ import argparse
 
 global dummyMode
 #dummyMode=True
-dummyMode=False
+#dummyMode=False
 
 # Number of programs to generate for each value variation
-global n_programs
-n_programs = 5
+#global n_programs
+#n_programs = 5
 
 """
 ### DPG Parameters ###
@@ -115,7 +115,7 @@ def generate_programs(dp: str, p_values: list) -> None:
         os.mkdir(dp)
     parameters_values = {params[i]:p_values[i] for i in range(len(p_values))}
     parameters_values['INNER_PROB'] = 0.0
-    parameters_values['N_PROGRAMS'] = n_programs
+    parameters_values['N_PROGRAMS'] = args.n
     parameters_values['PREF_CRITERION'] = "more_specific"
     with open(dp + '/parameters.json', 'w') as output:
         json.dump(parameters_values, output)
@@ -144,7 +144,12 @@ def create_datasets(dp):
                             params_steps[i]))
             variation = [int(value) if isinstance(value, np.integer) else 
                                 float(np.round(value,1)) for value in variation]
-            p_values = copy.copy(params_default_max)
+            if args.min:
+                p_values = copy.copy(params_default_min)
+            elif args.med:
+                p_values = copy.copy(params_default_med)
+            elif args.max:
+                p_values = copy.copy(params_default_max)
             for value in variation:
                 p_values[i] = value
                 generate_programs(param_path + '/' + str(value), p_values)
@@ -262,6 +267,21 @@ parser.add_argument('-compute',
 parser.add_argument('-analyze',
                     action='store_true',
                     help='To analyze metrics')
+parser.add_argument('-min',
+                    action='store_true',
+                    help='To use the minimum default values for parameters'\
+                            'that do no vary in each configuration')
+parser.add_argument('-med',
+                    action='store_true',
+                    help='To use the medium default values for parameters'\
+                            'that do no vary in each configuration')
+parser.add_argument('-max',
+                    action='store_true',
+                    help='To use the maximum default values for parameters'\
+                            'that do no vary in each configuration')
+parser.add_argument('-n',
+                    type=int,
+                    help='Number of programs to generate')
 
 args = parser.parse_args()
 
