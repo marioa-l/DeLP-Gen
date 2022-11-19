@@ -184,12 +184,12 @@ def analyze_metrics(parameter_directory: str, parameter: str) -> None:
         parameter: Parameter to analyze
     """
     variations = os.walk(parameter_directory)
-    variations = sorted(variations)
+    variations = sorted(variations[1])
     csv_fp = parameter_directory + 'metrics_csv.csv'
     with open(csv_fp, 'w') as f:
         writer = csv.writer(f)	
         writer.writerow(params + metrics)
-        for variation in next(variations)[1]:
+        for variation in variations:
             print(variation)
             path = parameter_directory + variation + '/'
             load_params = json.load(open(path + 'parameters.json')) 
