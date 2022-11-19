@@ -184,6 +184,7 @@ def analyze_metrics(parameter_directory: str, parameter: str) -> None:
         parameter: Parameter to analyze
     """
     variations = os.walk(parameter_directory)
+    variations = sorted(variations)
     csv_fp = parameter_directory + 'metrics_csv.csv'
     with open(csv_fp, 'w') as f:
         writer = csv.writer(f)	
