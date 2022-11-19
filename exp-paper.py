@@ -189,6 +189,7 @@ def analyze_metrics(parameter_directory: str, parameter: str) -> None:
         writer = csv.writer(f)	
         writer.writerow(params + metrics)
         for variation in next(variations)[1]:
+            print(variation)
             path = parameter_directory + variation + '/'
             load_params = json.load(open(path + 'parameters.json')) 
             load_metrics = json.load(open(path + 'metrics.json'))
