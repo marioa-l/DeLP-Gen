@@ -175,7 +175,7 @@ def compute_metrics(dp: str) -> None:
     print("All metrics were computed")
 
 
-def analyze_metrics(parameter_directory: str, parameter: str) -> None:
+def analyze_metrics(dp: str, parameter_directory: str, parameter: str) -> None:
     """
     Given the directory of a parameter, retrieve the metrics for each variation 
     to create a csv and then generate the correlation matrices
@@ -185,7 +185,7 @@ def analyze_metrics(parameter_directory: str, parameter: str) -> None:
     """
     variations = os.walk(parameter_directory)
     variations = sorted(next(variations)[1])
-    csv_fp = parameter_directory + 'metrics_csv.csv'
+    csv_fp = dp + parameter + 'metrics_csv.csv'
     with open(csv_fp, 'w') as f:
         writer = csv.writer(f)	
         writer.writerow(params + metrics)
@@ -200,7 +200,7 @@ def analyze_metrics(parameter_directory: str, parameter: str) -> None:
         f.close()
     
     # To draw and save correlation matrix
-    data_csv = pd.read_csv(parameter_directory + 'metrics_csv.csv')
+    data_csv = pd.read_csv(dp + parameter + 'metrics_csv.csv')
     p_csv = data_csv[[parameter] + metrics]
     labels = [parameter] + metrics
     #MATRIXES
@@ -210,10 +210,10 @@ def analyze_metrics(parameter_directory: str, parameter: str) -> None:
     matrix_cov = p_csv.cov()
     
     #PRINT THE PLOTS FOR EACH PARAMETER
-    print_matrix_plot(labels,matrix_pearson,(parameter_directory+"plot_pearson_"+parameter+".png"))
-    print_matrix_plot(labels,matrix_kendall,(parameter_directory+"plot_kendall_"+parameter+".png"))
-    print_matrix_plot(labels,matrix_spearman,(parameter_directory+"plot_spearman_"+parameter+".png"))
-    print_matrix_plot(labels,matrix_cov,(parameter_directory+"plot_cov_"+parameter+".png"))
+    print_matrix_plot(labels,matrix_pearson,(dp + parameter +"plot_pearson_"+parameter+".png"))
+    print_matrix_plot(labels,matrix_kendall,(dp + parameter+"plot_kendall_"+parameter+".png"))
+    print_matrix_plot(labels,matrix_spearman,(dp + parameter+"plot_spearman_"+parameter+".png"))
+    print_matrix_plot(labels,matrix_cov,(dp + parameter+"plot_cov_"+parameter+".png"))
 
 
 def print_matrix_plot(labels,matrix,filepath):
@@ -236,7 +236,7 @@ def analyze_corr(dp: str) -> None:
     parameters = os.listdir(dp)
     for parameter in parameters:
         print("Starting with parameter " + parameter)
-        analyze_metrics(dp + parameter + '/', parameter)
+        analyze_metrics(dp, dp + parameter + '/', parameter)
         print("...complete")
     print("\nAll Complete")
 
