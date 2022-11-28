@@ -1,0 +1,62 @@
+use_criterion(more_specific).
+
+
+
+
+/*** KB LEVEL = 0 ***/
+a_0 -< true.
+a_1 -< true.
+a_2 -< true.
+~a_3 -< true.
+a_4 -< true.
+a_5 -< true.
+a_7 -< true.
+a_8 -< true.
+~a_9 -< true.
+a_14 -< true.
+d_15 -< true.
+d_16 -< true.
+d_17 -< true.
+d_18 -< true.
+d_19 -< true.
+d_20 -< true.
+d_21 -< true.
+d_22 -< true.
+d_23 -< true.
+d_24 -< true.
+d_25 -< true.
+d_26 -< true.
+a_6 <- true.
+
+
+
+
+/*** KB LEVEL = 1 ***/
+~a_10 <- a_6,~a_3.
+~a_10 <- a_6,a_1.
+~a_11 <- a_6.
+
+
+
+
+/*** KB LEVEL = 2 ***/
+a_13 -< a_14.
+a_12 -< ~a_10,a_6.
+a_13 <- ~a_10,~a_11.
+
+
+
+
+/*** KB LEVEL = 3 ***/
+~a_13 -< d_15,a_14.
+~a_13 -< d_16,a_14.
+a_13 -< d_17,d_15,a_14.
+a_13 -< d_18,d_15,a_14.
+a_13 -< d_19,d_16,a_14.
+a_13 -< d_16,d_20,a_14.
+~a_12 -< d_21,a_6,a_1.
+~a_12 -< a_6,~a_10,d_22.
+a_12 -< d_21,a_6,d_23,a_1.
+a_12 -< d_21,a_6,a_1,d_24.
+a_12 -< a_6,~a_10,d_25,d_22.
+a_12 -< a_6,d_26,~a_10,d_22.
