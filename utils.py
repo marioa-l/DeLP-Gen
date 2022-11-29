@@ -156,3 +156,12 @@ class Utils:
                 self.pretty(value, indent+1)
             else:
                 print('\t' * (indent+1) + str(value))
+
+
+    def string_to_int_float(self, value: str):
+        number = '0'
+        if value.isdigit():
+            number = int(value)
+        else:
+            number = float(value)
+        return number
