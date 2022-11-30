@@ -165,3 +165,6 @@ class Utils:
         else:
             number = float(value)
         return number
+
+    def my_round(self, number: float) -> float:
+        return float('{:0.2f}'.format(number))

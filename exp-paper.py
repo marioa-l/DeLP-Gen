@@ -118,7 +118,7 @@ def generate_programs(dp: str, p_values: list) -> None:
     parameters_values['N_PROGRAMS'] = args.n
     parameters_values['PREF_CRITERION'] = "more_specific"
     with open(dp + '/parameters.json', 'w') as output:
-        json.dump(parameters_values, output)
+        json.dump(parameters_values, output, indent=4)
     generator = Generator()
     params_to_gen = utils.get_data_from_file(dp + '/parameters.json')
     generator.generate(dp + '/', params_to_gen)
