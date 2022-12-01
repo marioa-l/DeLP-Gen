@@ -39,7 +39,7 @@ class Test:
 
 
     def test_metrics(self, dataset_path: str, defs:bool) -> None:
-        metrics = ComputeMetrics(dataset_path, 'metrics', dataset_path, '')
+        metrics = ComputeMetrics(dataset_path, 'metrics_aprox', dataset_path, '')
         metrics.show_setting()
         # List all program in the directory (but the parameters file)
         n_programs = os.listdir(dataset_path)

@@ -80,6 +80,25 @@ class ComputeMetrics:
         return [in_string_literals, literals]
 
 
+    def query_delp_solver_aprox(self) -> json:
+        delpProgram = self.path_delp
+        print("\nProgram: ", delpProgram)
+        delpProgram_json = delpProgram.replace(".delp",".json")
+        program_literals = self.utils.get_data_from_file(delpProgram_json)
+        program_literals = program_literals["literals"]
+        literals_to_query = self.get_random_querys(program_literals)
+        cmd = ['./globalCore', 'file', delpProgram, literals_to_query[0]]
+        try:
+            # TimeOut 30 minutes
+            output = check_output(cmd, stderr=STDOUT, timeout=1800). \
+                    decode(sys.stdout.encoding)
+            result = json.loads(output)
+            return result
+        except Exception as e:
+            print("Exception: ", e)
+            return json.loads('{"status":"","dGraph":""}')
+
+
     def query_delp_solver(self) -> json:
         """
         Call to delp solver to get all answers for the delp program
@@ -87,11 +106,6 @@ class ComputeMetrics:
         """
         delpProgram = self.path_delp
         print("\nProgram: ", delpProgram)
-        #delpProgram_json = delpProgram.replace(".delp",".json")
-        #program_literals = self.utils.get_data_from_file(delpProgram_json)["literals"]
-        #literals_to_query = self.get_random_querys(program_literals)
-        #print(literals_to_query[0])
-        #cmd = ['./globalCore', 'file', delpProgram, literals_to_query[0]]
         cmd = ['./globalCore', 'file', delpProgram, 'all']
         try:
             # TimeOut 30 minutes
@@ -216,7 +230,7 @@ class ComputeMetrics:
 
     def load(self,defs, id_p):
         initial_time = time.time()
-        core_response = self.query_delp_solver()
+        core_response = self.query_delp_solver_aprox()
         end_time = time.time()
         query_time = end_time - initial_time
         self.times.append(query_time)

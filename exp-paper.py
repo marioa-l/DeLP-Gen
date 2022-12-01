@@ -198,7 +198,6 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str) -> None:
             value_metrics.append(load_metrics['times']['mean'])
             writer.writerow(value_params + value_metrics)
         f.close()
-    
     # To draw and save correlation matrix
     data_csv = pd.read_csv(dp + parameter + 'metrics_csv.csv')
     p_csv = data_csv[[parameter] + metrics]
