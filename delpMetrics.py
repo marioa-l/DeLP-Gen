@@ -57,7 +57,6 @@ class ComputeMetrics:
         """
         delpProgram = self.path_delp
         cmd = ['./globalCore', 'file', delpProgram, 'answ', literal]
-        
         try:
             output = check_output(cmd, stderr=STDOUT, timeout=60). \
                 decode(sys.stdout.encoding)
@@ -69,24 +68,33 @@ class ComputeMetrics:
             return "Error"
 
 
-    def get_random_querys(self, literals_dicts):
+    def get_random_querys(self, literals_dicts: dict, perc: int):
+        """
+        Randomly select a percentage of literals per level to query.
+        
+        :param literals_dicts: A dictionary with all literals per level
+        :param perc: Percentile to select
+        """
         literals = []
         in_string_literals = '['
         for level, lits in literals_dicts.items():
-            lit = random.choice(lits)
-            literals.append(lit)
-            in_string_literals += lit + ','
+            n_literals_to_choose = int((float(perc) * float(len(lits))) / 100)
+            literals_to_consult = random.sample(lits, n_literals_to_choose)
+            literals.append(literals_to_consult)
+            for lit in literals_to_consult:
+                in_string_literals += lit + ','
         in_string_literals = in_string_literals[:-1] + ']'
+        print(in_string_literals)
         return [in_string_literals, literals]
 
 
-    def query_delp_solver_aprox(self) -> json:
+    def query_delp_solver_aprox(self, perc) -> json:
         delpProgram = self.path_delp
         print("\nProgram: ", delpProgram)
         delpProgram_json = delpProgram.replace(".delp",".json")
         program_literals = self.utils.get_data_from_file(delpProgram_json)
         program_literals = program_literals["literals"]
-        literals_to_query = self.get_random_querys(program_literals)
+        literals_to_query = self.get_random_querys(program_literals, perc)
         cmd = ['./globalCore', 'file', delpProgram, literals_to_query[0]]
         try:
             # TimeOut 30 minutes
@@ -99,7 +107,7 @@ class ComputeMetrics:
             return json.loads('{"status":"","dGraph":""}')
 
 
-    def query_delp_solver(self) -> json:
+    def query_delp_solver(self, perc) -> json:
         """
         Call to delp solver to get all answers for the delp program
         in self.path_delp
@@ -228,9 +236,9 @@ class ComputeMetrics:
         }
 
 
-    def load(self,defs, id_p):
+    def load(self, defs, id_p, method):
         initial_time = time.time()
-        core_response = self.query_delp_solver_aprox()
+        core_response = method(100)
         end_time = time.time()
         query_time = end_time - initial_time
         self.times.append(query_time)
@@ -332,8 +340,12 @@ class ComputeMetrics:
         self.utils.write_result(self.build_path_result(), results)
 
 
-    def compute_dataset(self, dataset_length,defs):
+    def compute_dataset(self, dataset_length, defs, approx_metrics, perc):
         global height_lines
+        if approx_metrics:
+            method_compute_metrics = self.query_delp_solver_aprox
+        else:
+            method_compute_metrics = self.query_delp_solver
 
         arguments = []
         defeaters = []
@@ -346,7 +358,7 @@ class ComputeMetrics:
         for count in range(dataset_length):
             filePath = self.path_dataset + str(count) + 'delp' + '.delp'
             self.path_delp = filePath
-            data = self.load(defs,str(count))
+            data = self.load(defs, str(count), method_compute_metrics)
             arguments.append(data['n_arguments'])
             defeaters.append(data['n_defeaters'])
             n_trees.append(data['n_trees'])

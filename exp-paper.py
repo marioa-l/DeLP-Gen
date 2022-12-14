@@ -170,7 +170,8 @@ def compute_metrics(dp: str) -> None:
             dataset_path = dp + param + '/' + value + '/'
             metrics = ComputeMetrics(dataset_path, 'metrics', dataset_path, '')
             n_programs = glob.glob(dataset_path + "*.delp")
-            metrics.compute_dataset(len(n_programs),False)
+            metrics.compute_dataset(len(n_programs), False, args.approx,
+                    args.perc)
         print(param + ": Computed metrics")
     print("All metrics were computed")
 
@@ -270,15 +271,16 @@ parser.add_argument('-analyze',
 parser.add_argument('-min',
                     action='store_true',
                     help='To use the minimum default values for parameters'\
-                            'that do no vary in each configuration')
+                            ' that do no vary in each configuration')
 parser.add_argument('-med',
                     action='store_true',
                     help='To use the medium default values for parameters'\
-                            'that do no vary in each configuration')
+                            ' that do no vary in each configuration')
 parser.add_argument('-max',
                     action='store_true',
                     help='To use the maximum default values for parameters'\
-                            'that do no vary in each configuration')
+                            ' that do no vary in each configuration')
+
 parser.add_argument('-n',
                     type=int,
                     help='Number of programs to generate')
