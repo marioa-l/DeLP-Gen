@@ -236,9 +236,9 @@ class ComputeMetrics:
         }
 
 
-    def load(self, defs, id_p, method):
+    def load(self, defs, id_p, method, perc):
         initial_time = time.time()
-        core_response = method(100)
+        core_response = method(perc)
         end_time = time.time()
         query_time = end_time - initial_time
         self.times.append(query_time)
@@ -358,7 +358,7 @@ class ComputeMetrics:
         for count in range(dataset_length):
             filePath = self.path_dataset + str(count) + 'delp' + '.delp'
             self.path_delp = filePath
-            data = self.load(defs, str(count), method_compute_metrics)
+            data = self.load(defs, str(count), method_compute_metrics, perc)
             arguments.append(data['n_arguments'])
             defeaters.append(data['n_defeaters'])
             n_trees.append(data['n_trees'])

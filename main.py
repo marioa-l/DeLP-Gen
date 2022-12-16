@@ -43,7 +43,6 @@ class Test:
             metrics = ComputeMetrics(dataset_path, 'metrics_aprox',
                     dataset_path, '')
         else:
-            print("POR ACA")
             metrics = ComputeMetrics(dataset_path, 'metrics', dataset_path, '')
         metrics.show_setting()
         # List all program in the directory (but the parameters file)
