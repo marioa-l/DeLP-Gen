@@ -98,7 +98,7 @@ class ComputeMetrics:
         cmd = ['./globalCore', 'file', delpProgram, literals_to_query[0]]
         try:
             # TimeOut 30 minutes
-            output = check_output(cmd, stderr=STDOUT, timeout=1800). \
+            output = check_output(cmd, stderr=STDOUT, timeout=900). \
                     decode(sys.stdout.encoding)
             result = json.loads(output)
             return result
@@ -117,7 +117,7 @@ class ComputeMetrics:
         cmd = ['./globalCore', 'file', delpProgram, 'all']
         try:
             # TimeOut 30 minutes
-            output = check_output(cmd, stderr=STDOUT, timeout=1800). \
+            output = check_output(cmd, stderr=STDOUT, timeout=900). \
                 decode(sys.stdout.encoding)
             result = json.loads(output)
             return result

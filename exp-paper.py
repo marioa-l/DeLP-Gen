@@ -83,20 +83,26 @@ metrics=["arguments",
 #       "tau"]
 
 # The minimum value for each parameters
-params_min = [1,0.1,0.1,0.1,1,1,1,1,1,1]
+#params_min = [1,0.1,0.1,0.1,1,1,1,1,1,1]
+params_min = [10,0.5,0.5,0.5,1,2,2,2,1,1]
 
 # The maximum value for each parameters (not inclusive)
-params_max = [11,1.1,1.1,1.1,6,6,6,6,6,6]
+#params_max = [11,1.1,1.1,1.1,6,6,6,6,6,6]
+params_max = [110,1.0,1.0,1.0,4,12,12,12,4,6]
 
 # The parameter steps 
-params_steps = [1,0.1,0.1,0.1,1,1,1,1,1,1]
+#params_steps = [1,0.1,0.1,0.1,1,1,1,1,1,1]
+params_steps = [10,0.1,0.1,0.1,1,2,2,2,1,1]
 
 # The parameter values for non-variable param
-params_default_min = [2,0.2,0.2,0.2,2,2,2,2,2,2]
+#params_default_min = [2,0.2,0.2,0.2,2,2,2,2,2,2]
+params_default_min = [10,0.5,0.5,0.5,1,2,2,2,1,1]
 
-params_default_med = [5,0.5,0.5,0.5,3,3,3,3,3,3]
+#params_default_med = [5,0.5,0.5,0.5,3,3,3,3,3,3]
+params_default_med = [50,0.7,0.7,0.7,2,5,5,5,2,3]
 
-params_default_max = [10,1,1,1,5,5,5,5,5,5]
+#params_default_max = [10,1,1,1,5,5,5,5,5,5]
+params_default_max = [100,0.9,0.9,0.9,3,10,10,10,3,5]
 
 #Utils
 utils = Utils()
@@ -170,8 +176,8 @@ def compute_metrics(dp: str) -> None:
             dataset_path = dp + param + '/' + value + '/'
             metrics = ComputeMetrics(dataset_path, 'metrics', dataset_path, '')
             n_programs = glob.glob(dataset_path + "*.delp")
-            metrics.compute_dataset(len(n_programs), False, args.approx,
-                    args.perc)
+            metrics.compute_dataset(len(n_programs), False, False,
+                    100)
         print(param + ": Computed metrics")
     print("All metrics were computed")
 
