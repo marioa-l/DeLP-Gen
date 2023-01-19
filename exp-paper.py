@@ -88,21 +88,23 @@ params_min = [10,0.5,0.5,0.5,1,2,2,2,1,1]
 
 # The maximum value for each parameters (not inclusive)
 #params_max = [11,1.1,1.1,1.1,6,6,6,6,6,6]
-params_max = [110,1.0,1.0,1.0,4,6,6,6,4,6]
+params_max = [110,1.0,1.0,1.0,2,6,3,6,3,4]
 
 # The parameter steps 
 #params_steps = [1,0.1,0.1,0.1,1,1,1,1,1,1]
 params_steps = [10,0.1,0.1,0.1,1,1,1,1,1,1]
 
+#############################################
 # The parameter values for non-variable param
+#############################################
 #params_default_min = [2,0.2,0.2,0.2,2,2,2,2,2,2]
 params_default_min = [10,0.5,0.5,0.5,1,2,2,2,1,1]
 
 #params_default_med = [5,0.5,0.5,0.5,3,3,3,3,3,3]
-params_default_med = [50,0.7,0.7,0.7,2,3,3,3,2,3]
+params_default_med = [50,0.7,0.7,0.7,1,3,1,3,1,2]
 
 #params_default_max = [10,1,1,1,5,5,5,5,5,5]
-params_default_max = [100,0.9,0.9,0.9,3,5,5,5,3,5]
+params_default_max = [100,0.9,0.9,0.9,1,5,2,5,2,3]
 
 #Utils
 utils = Utils()
