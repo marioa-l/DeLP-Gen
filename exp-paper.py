@@ -62,25 +62,25 @@ params = [
 
 """
 ### DeLP Metrics ###
-- arguments: Number of arguments.
+- args: Number of arguments.
 - rules: Total number of rules (srules and drules).
-- facts_presum: Number of facts and presumptions.
+- base: Number of facts and presumptions.
 - mddl: Mean length of defeasible derivation of any argument.
 - h: Mean maximum length of argumentation lines.
-- t: Mean number of argument lines arising from an argument.
-- tau: Number of dialectical trees. (NOT IMPLEMENTED).
+- b: Mean number of argument lines arising from an argument.
+- t: Number of dialectical trees. (NOT IMPLEMENTED).
 - t_min: Time to respond to the status of the "simplest literal" in the program.
 - t_max: Time to respond to the status of the "most dificult" literal of the program.
 - t_mean: Average time to respond to a program literal.
 """
-metrics=["arguments",
-       "rules",
-       "fact_preum",
-       "mddl",
-       "h",
-       "t",
-       "times"]
-#       "tau"]
+metrics = ["args",
+           "rules",
+           "base",
+           "mddl",
+           "t",
+           "b",
+           "h",
+           "times"]
 
 # The minimum value for each parameters
 #params_min = [1,0.1,0.1,0.1,1,1,1,1,1,1]
@@ -201,7 +201,7 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str) -> None:
             load_params = json.load(open(path + 'parameters.json')) 
             load_metrics = json.load(open(path + 'metrics.json'))
             value_params = [load_params[p] for p in params]
-            value_metrics = [load_metrics[m] for m in metrics if m != 'times']
+            value_metrics = [load_metrics[m]['mean'] for m in metrics if m != 'times']
             value_metrics.append(load_metrics['times']['mean'])
             writer.writerow(value_params + value_metrics)
         f.close()
