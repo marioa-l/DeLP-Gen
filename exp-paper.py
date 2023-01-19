@@ -84,11 +84,11 @@ metrics = ["args",
 
 # The minimum value for each parameters
 #params_min = [1,0.1,0.1,0.1,1,1,1,1,1,1]
-params_min = [10,0.5,0.5,0.5,1,2,2,2,1,1]
+params_min = [10,0.5,0.5,0.5,1,2,1,2,1,1]
 
 # The maximum value for each parameters (not inclusive)
 #params_max = [11,1.1,1.1,1.1,6,6,6,6,6,6]
-params_max = [110,1.0,1.0,1.0,2,6,3,6,3,4]
+params_max = [110,1.0,1.0,1.0,3,6,3,5,3,4]
 
 # The parameter steps 
 #params_steps = [1,0.1,0.1,0.1,1,1,1,1,1,1]
