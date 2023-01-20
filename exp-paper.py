@@ -9,105 +9,84 @@ Some abbreviations:
     - head: Consequent of a rule (conclusion)
 """
 
-import random
-import statistics as stat
 import csv
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import os
 import sys
-import json
 import copy
 import glob
 from generator import Generator
 from utils import *
 from delpMetrics import ComputeMetrics
-import seaborn as sns
-from matplotlib import colors
 import argparse
-
-global dummyMode
-#dummyMode=True
-#dummyMode=False
-
-# Number of programs to generate for each value variation
-#global n_programs
-#n_programs = 5
-
-"""
-### DPG Parameters ###
-- KBBASE_SIZE: Minimum number of facts and presumptions.
-- FACT_PROB: Probability that an element is a fact.
-- NEG_PROB: Probability to create a negated atom.
-- DRULE_PROB: Probability to create a defeasible rule (1 - DRULE_PROB to srule).
-- MAX_RULESPERHEAD: Maximum number of rules with the same head.
-- MAX_BODYSIZE: Maximum number of literals in the body of an argument.
-- MIN_ARGSLEVEL: Minimum number of distinct arguments in a level.
-- LEVELS: Program levels.
-- RAMIFICATION: Maximum number of defeaters for an argument of the top level.
-- TREE_HEIGHT: Maximum height of dialectical trees.
-"""
-params = [
-       "KBBASE_SIZE",
-       "FACT_PROB",
-       "NEG_PROB", 
-       "DRULE_PROB",
-       "MAX_RULESPERHEAD", 
-       "MAX_BODYSIZE", 
-       "MIN_ARGSLEVEL", 
-       "LEVELS",
-       "RAMIFICATION",
-       "TREE_HEIGHT"]
 
 """
 ### DeLP Metrics ###
-- args: Number of arguments.
-- rules: Total number of rules (srules and drules).
-- base: Number of facts and presumptions.
-- mddl: Mean length of defeasible derivation of any argument.
-- h: Mean maximum length of argumentation lines.
-- b: Mean number of argument lines arising from an argument.
-- t: Number of dialectical trees. (NOT IMPLEMENTED).
-- t_min: Time to respond to the status of the "simplest literal" in the program.
-- t_max: Time to respond to the status of the "most dificult" literal of the program.
-- t_mean: Average time to respond to a program literal.
+- base: Number of facts and presumptions
+- rules: Number of defeasible and strict rules (except those of level 0).
+- args: Number of arguments (except those of level 0).
+- addl: Average Defeasible Derivation Length.
+- t: Number of dialectical trees.
+- b: Branching factor.
+- h: Average heights of dialectical trees.
+- time: Average time to compute all literals.
 """
-metrics = ["args",
+metrics = ["base",
            "rules",
-           "base",
-           "mddl",
+           "args",
+           "addl",
            "t",
            "b",
            "h",
            "times"]
 
-# The minimum value for each parameters
-#params_min = [1,0.1,0.1,0.1,1,1,1,1,1,1]
-params_min = [10,0.5,0.5,0.5,1,2,1,2,1,1]
+"""
+### DPG Parameters ###
+- ext_seed: Minimum number of facts and presumptions.
+- p_fact: Probability that an element is a fact.
+- p_neg: Probability to create a negated atom.
+- p_drule: Probability to create a defeasible rule (1 - p_drule to srule).
+- max_argsconc: Maximum number of rules with the same head.
+- max_bodysize: Maximum number of literals in the body of an argument.
+- min_argslevel: Minimum number of distinct arguments in a level.
+- levels: Program levels.
+- defs: Maximum number of defeaters for an argument of the top level.
+- depth_argline: Maximum height of dialectical trees.
+"""
+params = [
+    "ext_seed",
+    "p_fact",
+    "p_neg",
+    "p_drule",
+    "max_argsconc",
+    "max_bodysize",
+    "min_argslevel",
+    "levels",
+    "defs",
+    "depth_argline"]
 
-# The maximum value for each parameters (not inclusive)
-#params_max = [11,1.1,1.1,1.1,6,6,6,6,6,6]
-params_max = [110,1.0,1.0,1.0,3,6,3,5,3,4]
+# The minimum value for each parameter
+params_min = [10, 0.5, 0.5, 0.5, 1, 2, 1, 2, 1, 1]
+
+# The maximum value for each parameter (not inclusive)
+params_max = [110, 1.0, 1.0, 1.0, 3, 6, 3, 5, 3, 4]
 
 # The parameter steps 
-#params_steps = [1,0.1,0.1,0.1,1,1,1,1,1,1]
-params_steps = [10,0.1,0.1,0.1,1,1,1,1,1,1]
+params_steps = [10, 0.1, 0.1, 0.1, 1, 1, 1, 1, 1, 1]
 
 #############################################
 # The parameter values for non-variable param
 #############################################
-#params_default_min = [2,0.2,0.2,0.2,2,2,2,2,2,2]
-params_default_min = [10,0.5,0.5,0.5,1,2,2,2,1,1]
-
-#params_default_med = [5,0.5,0.5,0.5,3,3,3,3,3,3]
+params_default_min = [10, 0.5, 0.5, 0.5, 1, 2, 2, 2, 1, 1]
+# These values are used as the "default" option
 params_default_med = [50, 0.7, 0.7, 0.7, 2, 3, 2, 3, 2, 2]
 
-#params_default_max = [10,1,1,1,5,5,5,5,5,5]
-params_default_max = [100,0.9,0.9,0.9,1,5,2,5,2,3]
+params_default_max = [100, 0.9, 0.9, 0.9, 1, 5, 2, 5, 2, 3]
 
-#Utils
+# Utils
 utils = Utils()
+
 
 def generate_programs(dp: str, p_values: list) -> None:
     """
@@ -121,7 +100,7 @@ def generate_programs(dp: str, p_values: list) -> None:
     check_directory = os.path.isdir(dp)
     if not check_directory:
         os.mkdir(dp)
-    parameters_values = {params[i]:p_values[i] for i in range(len(p_values))}
+    parameters_values = {params[i]: p_values[i] for i in range(len(p_values))}
     parameters_values['INNER_PROB'] = 0.0
     parameters_values['N_PROGRAMS'] = args.n
     parameters_values['PREF_CRITERION'] = "more_specific"
@@ -137,7 +116,7 @@ def create_datasets(dp):
     Build the dataset on a specific directory path
     Args:
         dp: Directory path to sava dataset
-    """ 
+    """
     check_directory = os.path.isdir(dp)
     if not check_directory:
         print("The specified directory does not exist")
@@ -147,11 +126,11 @@ def create_datasets(dp):
             param_to_variate = params[i]
             param_path = dp + param_to_variate
             os.mkdir(param_path)
-            variation = list(np.arange(params_min[i], 
-                            params_max[i],
-                            params_steps[i]))
-            variation = [int(value) if isinstance(value, np.integer) else 
-                                float(np.round(value,1)) for value in variation]
+            variation = list(np.arange(params_min[i],
+                                       params_max[i],
+                                       params_steps[i]))
+            variation = [int(value) if isinstance(value, np.integer) else
+                         float(np.round(value, 1)) for value in variation]
             if args.min:
                 p_values = copy.copy(params_default_min)
             elif args.med:
@@ -173,13 +152,13 @@ def compute_metrics(dp: str) -> None:
     """
     params_directory = os.listdir(dp)
     for param in params_directory:
-        variations = os.listdir(dp + param  + '/')
+        variations = os.listdir(dp + param + '/')
         for value in variations:
             dataset_path = dp + param + '/' + value + '/'
             metrics = ComputeMetrics(dataset_path, 'metrics', dataset_path, '')
             n_programs = glob.glob(dataset_path + "*.delp")
             metrics.compute_dataset(len(n_programs), False, False,
-                    100)
+                                    100)
         print(param + ": Computed metrics")
     print("All metrics were computed")
 
@@ -193,14 +172,14 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str) -> None:
         parameter: Parameter to analyze
     """
     variations = os.walk(parameter_directory)
-    variations = sorted(next(variations)[1], key = utils.string_to_int_float)
+    variations = sorted(next(variations)[1], key=utils.string_to_int_float)
     csv_fp = dp + parameter + 'metrics_csv.csv'
     with open(csv_fp, 'w') as f:
-        writer = csv.writer(f)	
+        writer = csv.writer(f)
         writer.writerow(params + metrics)
         for variation in variations:
             path = parameter_directory + variation + '/'
-            load_params = json.load(open(path + 'parameters.json')) 
+            load_params = json.load(open(path + 'parameters.json'))
             load_metrics = json.load(open(path + 'metrics.json'))
             value_params = [load_params[p] for p in params]
             value_metrics = [load_metrics[m]['mean'] for m in metrics if m != 'times']
@@ -211,31 +190,43 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str) -> None:
     data_csv = pd.read_csv(dp + parameter + 'metrics_csv.csv')
     p_csv = data_csv[[parameter] + metrics]
     labels = [parameter] + metrics
-    #MATRIXES
-    matrix_pearson = p_csv.corr(method='pearson')
-    matrix_kendall = p_csv.corr(method='kendall')
-    matrix_spearman = p_csv.corr(method='spearman')
-    matrix_cov = p_csv.cov()
-    
-    #PRINT THE PLOTS FOR EACH PARAMETER
-    print_matrix_plot(labels,matrix_pearson,(dp + parameter +"plot_pearson_"+parameter+".png"))
-    print_matrix_plot(labels,matrix_kendall,(dp + parameter+"plot_kendall_"+parameter+".png"))
-    print_matrix_plot(labels,matrix_spearman,(dp + parameter+"plot_spearman_"+parameter+".png"))
-    print_matrix_plot(labels,matrix_cov,(dp + parameter+"plot_cov_"+parameter+".png"))
+    # MATRIXES
+    matrix_pearson = round(p_csv.corr(method='pearson'), 2)
+    matrix_kendall = round(p_csv.corr(method='kendall'), 2)
+    matrix_spearman = round(p_csv.corr(method='spearman'), 2)
+    matrix_cov = round(p_csv.cov(), 2)
+
+    # PRINT THE PLOTS FOR EACH PARAMETER
+    print_matrix_plot(labels, matrix_pearson, (dp + parameter + "plot_pearson_" + parameter + ".png"))
+    print_matrix_plot(labels, matrix_kendall, (dp + parameter + "plot_kendall_" + parameter + ".png"))
+    print_matrix_plot(labels, matrix_spearman, (dp + parameter + "plot_spearman_" + parameter + ".png"))
+    print_matrix_plot(labels, matrix_cov, (dp + parameter + "plot_cov_" + parameter + ".png"))
 
 
-def print_matrix_plot(labels,matrix,filepath):
-    fig_cor, axes_cor = plt.subplots(1,1)
+def nan_to_cero(number):
+    if pd.isna(number):
+        return 0.00
+    else:
+        return number
+
+
+def print_matrix_plot(labels, matrix, filepath):
+    fig_cor, axes_cor = plt.subplots(1, 1)
     fig_cor.set_size_inches(12, 12)
-    mask =  np.tri(matrix.shape[0], k=0)
-    matrix = np.ma.array(matrix, mask=np.transpose(mask)) # mask out the lower triangle
+    mask = np.tri(matrix.shape[0], k=0)
+    matrix = np.ma.array(matrix, mask=np.transpose(mask))  # mask out the lower triangle
     img = axes_cor.imshow(matrix, cmap=plt.cm.get_cmap('RdYlGn', 10), vmin=-1, vmax=1)
-    plt.colorbar(img)
-    axes_cor.set_xticks(np.arange(0,matrix.shape[0], matrix.shape[0]*1.0/len(labels)))
-    axes_cor.set_yticks(np.arange(0,matrix.shape[1], matrix.shape[1]*1.0/len(labels)))
-    axes_cor.set_xticklabels(labels)
+    plt.colorbar(img, fraction=0.046, pad=0.04)
+    axes_cor.set_xticks(np.arange(0, matrix.shape[0], matrix.shape[0] * 1.0 / len(labels)))
+    axes_cor.set_yticks(np.arange(0, matrix.shape[1], matrix.shape[1] * 1.0 / len(labels)))
+    axes_cor.set_xticklabels(labels, rotation = 45, ha="right")
     axes_cor.set_yticklabels(labels)
-    plt.savefig(filepath)
+
+    for i in range(len(labels)):
+        for j in range(len(labels)):
+            text = axes_cor.text(j, i, nan_to_cero(matrix[i, j]), ha="center", va="center", color="black", size=18)
+
+    plt.savefig(filepath, dpi=300, bbox_inches='tight')
     plt.close()
 
 
@@ -248,16 +239,17 @@ def analyze_corr(dp: str) -> None:
         print("...complete")
     print("\nAll Complete")
 
+
 """
 Main
 """
 parser = argparse.ArgumentParser(
-prog='DPG Script',
-description='Script to create datasets, compute and analyze metrics of DeLP '\
-        'programs generated by DPG',
-epilog='The path (-path) is the directory where the dataset will be generated '\
-        'and where the results will be saved. In case of computing or '\
-        'analyzing the metrics, path is where the DeLP programs are.'
+    prog='DPG Script',
+    description='Script to create datasets, compute and analyze metrics of DeLP ' \
+                'programs generated by DPG',
+    epilog='The path (-path) is the directory where the dataset will be generated ' \
+           'and where the results will be saved. In case of computing or ' \
+           'analyzing the metrics, path is where the DeLP programs are.'
 )
 
 parser.add_argument('-path',
@@ -278,16 +270,16 @@ parser.add_argument('-analyze',
                     help='To analyze metrics')
 parser.add_argument('-min',
                     action='store_true',
-                    help='To use the minimum default values for parameters'\
-                            ' that do no vary in each configuration')
+                    help='To use the minimum default values for parameters' \
+                         ' that do no vary in each configuration')
 parser.add_argument('-med',
                     action='store_true',
-                    help='To use the medium default values for parameters'\
-                            ' that do no vary in each configuration')
+                    help='To use the medium default values for parameters' \
+                         ' that do no vary in each configuration')
 parser.add_argument('-max',
                     action='store_true',
-                    help='To use the maximum default values for parameters'\
-                            ' that do no vary in each configuration')
+                    help='To use the maximum default values for parameters' \
+                         ' that do no vary in each configuration')
 
 parser.add_argument('-n',
                     type=int,
