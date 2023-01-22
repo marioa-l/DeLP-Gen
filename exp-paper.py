@@ -55,16 +55,17 @@ metrics = ["base",
 - depth_argline: Maximum height of dialectical trees.
 """
 params = [
-    "ext_seed",
-    "p_fact",
-    "p_neg",
-    "p_drule",
-    "max_argsconc",
-    "max_bodysize",
-    "min_argslevel",
-    "levels",
-    "defs",
-    "depth_argline"]
+"KBBASE_SIZE",
+"FACT_PROB",
+"NEG_PROB",
+"DRULE_PROB",
+"MAX_RULESPERHEAD",
+"MAX_BODYSIZE",
+"MIN_ARGSLEVEL",
+"LEVELS",
+"RAMIFICATION",
+"TREE_HEIGHT"
+]
 
 # The minimum value for each parameter
 params_min = [10, 0.5, 0.5, 0.5, 1, 2, 1, 2, 1, 1]
