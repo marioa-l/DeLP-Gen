@@ -20,6 +20,7 @@ from generator import Generator
 from utils import *
 from delpMetrics import ComputeMetrics
 import argparse
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 """
 ### DeLP Metrics ###
@@ -193,16 +194,19 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str) -> None:
     labels = [parameter] + metrics
     # MATRIXES
     matrix_pearson = round(p_csv.corr(method='pearson'), 2)
-    matrix_kendall = round(p_csv.corr(method='kendall'), 2)
-    matrix_spearman = round(p_csv.corr(method='spearman'), 2)
-    matrix_cov = round(p_csv.cov(), 2)
-
+    #matrix_kendall = round(p_csv.corr(method='kendall'), 2)
+    #matrix_spearman = round(p_csv.corr(method='spearman'), 2)
+    #matrix_cov = round(p_csv.cov(), 2)
+    
+    # To create matrix with all parameters
+    corr_param = matrix_pearson[parameter]
     # PRINT THE PLOTS FOR EACH PARAMETER
     print_matrix_plot(labels, matrix_pearson, (dp + parameter + "plot_pearson_" + parameter + ".png"))
-    print_matrix_plot(labels, matrix_kendall, (dp + parameter + "plot_kendall_" + parameter + ".png"))
-    print_matrix_plot(labels, matrix_spearman, (dp + parameter + "plot_spearman_" + parameter + ".png"))
-    print_matrix_plot(labels, matrix_cov, (dp + parameter + "plot_cov_" + parameter + ".png"))
+    #print_matrix_plot(labels, matrix_kendall, (dp + parameter + "plot_kendall_" + parameter + ".png"))
+    #print_matrix_plot(labels, matrix_spearman, (dp + parameter + "plot_spearman_" + parameter + ".png"))
+    #print_matrix_plot(labels, matrix_cov, (dp + parameter + "plot_cov_" + parameter + ".png"))
 
+    return corr_param
 
 def nan_to_cero(number):
     if pd.isna(number):
@@ -231,16 +235,47 @@ def print_matrix_plot(labels, matrix, filepath):
     plt.close()
 
 
+def generate_correlations_matrix(dp, correlations):
+    params = correlations.columns
+    metrics = correlations.index
+    fig_cor, axes_cor = plt.subplots(1,1)
+    fig_cor.set_size_inches(12,12)
+    img = axes_cor.imshow(correlations, cmap=plt.cm.get_cmap('RdYlGn', 10),
+            vmin=-1, vmax=1)
+    plt.title("Correlations", size=20, fontweight='bold')
+    plt.xlabel("Parameters", size=18)
+    plt.ylabel("Metrics", size=18)
+    ax = plt.gca()
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.5)
+    plt.colorbar(img, cax=cax)
+    axes_cor.set_xticks(np.arange(0, correlations.shape[1],
+        correlations.shape[1] * 1.0 / len(params)))
+    axes_cor.set_yticks(np.arange(0, correlations.shape[0],
+        correlations.shape[0] * 1.0 / len(metrics)))
+    axes_cor.set_xticklabels(params, rotation = 45, ha="right", fontweight='bold')
+    axes_cor.set_yticklabels(metrics, fontweight='bold')
+    matrix = correlations.to_numpy()
+    for i in range(len(metrics)):
+        for j in range(len(params)):
+            text = axes_cor.text(j, i, nan_to_cero(matrix[i, j]), ha="center", va="center", color="black", size=18)
+    
+    plt.savefig(dp + 'correlations.png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+
+
 def analyze_corr(dp: str) -> None:
     # To analyze correlations
     parameters = os.listdir(dp)
+    corr_params = pd.DataFrame()
     for parameter in parameters:
         print("Starting with parameter " + parameter)
-        analyze_metrics(dp, dp + parameter + '/', parameter)
+        corr_param = analyze_metrics(dp, dp + parameter + '/',parameter)
+        corr_params[parameter] = corr_param.iloc[1:]
         print("...complete")
     print("\nAll Complete")
-
-
+    generate_correlations_matrix(dp, corr_params)
 """
 Main
 """
