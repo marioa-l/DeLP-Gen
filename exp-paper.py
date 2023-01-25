@@ -69,20 +69,20 @@ params = [
 ]
 
 # The minimum value for each parameter
-params_min = [10, 0.5, 0.5, 0.5, 1, 2, 1, 2, 1, 1]
+params_min = [0, 0.1, 0.1, 0.1, 1, 1, 1, 1, 1, 1]
 
 # The maximum value for each parameter (not inclusive)
-params_max = [110, 1.0, 1.0, 1.0, 3, 6, 3, 5, 3, 4]
+params_max = [250, 1.0, 1.0, 1.0, 4, 6, 6, 11, 6, 6]
 
 # The parameter steps 
-params_steps = [10, 0.1, 0.1, 0.1, 1, 1, 1, 1, 1, 1]
+params_steps = [50, 0.1, 0.1, 0.1, 1, 1, 1, 1, 1, 1]
 
 #############################################
 # The parameter values for non-variable param
 #############################################
 params_default_min = [10, 0.5, 0.5, 0.5, 1, 2, 2, 2, 1, 1]
 # These values are used as the "default" option
-params_default_med = [50, 0.7, 0.7, 0.7, 2, 3, 2, 3, 2, 2]
+params_default_med = [50, 0.5, 0.5, 0.5, 5, 5, 5, 5, 0, 0]
 
 params_default_max = [100, 0.9, 0.9, 0.9, 1, 5, 2, 5, 2, 3]
 
