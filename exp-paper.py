@@ -158,32 +158,30 @@ def create_datasets(dp):
     Args:
         dp: Directory path to sava dataset
     """
-    test_parameter = "KBBASE_SIZE"
     check_directory = os.path.isdir(dp)
     if not check_directory:
         print("The specified directory does not exist")
         sys.exit()
     else:
         for i in range(len(params)):
-            if params[i] == test_parameter:
-                param_to_variate = params[i]
-                param_path = dp + param_to_variate
-                os.mkdir(param_path)
-                variation = list(np.arange(params_min[i],
-                                           params_max[i],
-                                           params_steps[i]))
-                variation = [int(value) if isinstance(value, np.integer) else
-                             float(np.round(value, 1)) for value in variation]
-                p_values = copy.copy(defaults_values[i])
-                # if args.min:
-                #    p_values = copy.copy(params_default_min)
-                # elif args.med:
-                #    p_values = copy.copy(params_default_med)
-                # elif args.max:
-                #    p_values = copy.copy(params_default_max)
-                for value in variation:
-                    p_values[i] = value
-                    generate_programs(param_path + '/' + str(value), p_values)
+            param_to_variate = params[i]
+            param_path = dp + param_to_variate
+            os.mkdir(param_path)
+            variation = list(np.arange(params_min[i],
+                                       params_max[i],
+                                       params_steps[i]))
+            variation = [int(value) if isinstance(value, np.integer) else
+                         float(np.round(value, 1)) for value in variation]
+            p_values = copy.copy(defaults_values[i])
+            # if args.min:
+            #    p_values = copy.copy(params_default_min)
+            # elif args.med:
+            #    p_values = copy.copy(params_default_med)
+            # elif args.max:
+            #    p_values = copy.copy(params_default_max)
+            for value in variation:
+                p_values[i] = value
+                generate_programs(param_path + '/' + str(value), p_values)
         print("Dataset created")
 
 
