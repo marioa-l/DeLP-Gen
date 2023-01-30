@@ -98,19 +98,19 @@ params_default_facts = [100, None, 0.5, 0.5, 3, 3, 3, 2, 3, 1]
 # "NEG_PROB",
 params_default_neg = [100, 0.5, None, 0.5, 3, 3, 3, 2, 1, 1]
 # "DRULE_PROB",
-params_default_drul = [50, 0.1, 0.1, None, 1, 1, 1, 1, 1, 1]
+params_default_drul = [100, 0.5, 0.5, None, 3, 3, 3, 2, 1, 1]
 # "MAX_RULESPERHEAD",
-params_default_heads = [50, 0.1, 0.1, 0.1, None, 1, 1, 1, 1, 1]
+params_default_heads = [100, 0.5, 0.5, 0.5, None, 3, 1, 3, 1, 1]
 # "MAX_BODYSIZE",
-params_default_body = [50, 0.1, 0.1, 0.1, 1, None, 1, 1, 1, 1]
+params_default_body = [100, 0.5, 0.5, 0.5, 1, None, 3, 3, 1, 1]
 # "MIN_ARGSLEVEL",
-params_default_arglvl = [50, 0.1, 0.1, 0.1, 1, 1, None, 1, 1, 1]
+params_default_arglvl = [100, 0.5, 0.5, 0.5, 1, 3, None, 3, 1, 1]
 # "LEVELS",
-params_default_lvl = [50, 0.1, 0.1, 0.1, 1, 1, 1, None, 1, 1]
+params_default_lvl = [100, 0.5, 0.5, 0.5, 1, 2, 2, None, 1, 1]
 # "RAMIFICATION",
-params_default_deft = [50, 0.1, 0.1, 0.1, 1, 1, 1, 1, None, 1]
+params_default_deft = [100, 0.5, 0.5, 0.5, 1, 5, 3, 2, None, 3]
 # "TREE_HEIGHT"
-params_default_height = [50, 0.1, 0.1, 0.1, 1, 1, 1, 1, 1, None]
+params_default_height = [100, 0.5, 0.5, 0.5, 1, 5, 3, 2, 2, None]
 # All defaults values
 defaults_values = [
     params_default_base,
