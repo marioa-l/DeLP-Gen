@@ -21,7 +21,7 @@ from utils import *
 from delpMetrics import ComputeMetrics
 import argparse
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
+from scipy.stats import pearsonr
 """
 ### DeLP Metrics ###
 - base: Number of facts and presumptions
@@ -72,19 +72,57 @@ params = [
 params_min = [0, 0.1, 0.1, 0.1, 1, 1, 1, 1, 1, 1]
 
 # The maximum value for each parameter (not inclusive)
-params_max = [250, 1.0, 1.0, 1.0, 4, 6, 6, 11, 6, 6]
+params_max = [200, 1.0, 1.0, 1.0, 6, 6, 6, 11, 6, 6]
 
 # The parameter steps 
-params_steps = [50, 0.1, 0.1, 0.1, 1, 1, 1, 1, 1, 1]
+params_steps = [20, 0.1, 0.1, 0.1, 1, 1, 1, 1, 1, 1]
 
 #############################################
 # The parameter values for non-variable param
 #############################################
-params_default_min = [10, 0.5, 0.5, 0.5, 1, 2, 2, 2, 1, 1]
-# These values are used as the "default" option
-params_default_med = [50, 0.5, 0.5, 0.5, 5, 5, 5, 5, 0, 0]
+params_default_min = [50, 0.1, 0.1, 0.1, 1, 1, 1, 1, 1, 1]
 
-params_default_max = [100, 0.9, 0.9, 0.9, 1, 5, 2, 5, 2, 3]
+params_default_med = [150, 0.5, 0.5, 0.5, 3, 3, 3, 5, 3, 3]
+
+params_default_max = [200, 0.9, 0.9, 0.9, 5, 5, 5, 10, 5, 5]
+
+#############################################
+# The parameter values for non-variable param (defined by authors)
+
+#############################################
+#"KBBASE_SIZE",
+params_default_base= [None, 0.5, 0.5, 0.5, 3, 3, 3, 2, 1, 1]
+#"FACT_PROB",
+params_default_facts = [100, None, 0.5, 0.5, 3, 3, 3, 2, 3, 1]
+#"NEG_PROB",
+params_default_neg = [100, 0.5, None, 0.5, 3, 3, 3, 2, 1, 1]
+#"DRULE_PROB",
+params_default_drul = [50, 0.1, 0.1, None, 1, 1, 1, 1, 1, 1]
+#"MAX_RULESPERHEAD",
+params_default_heads = [50, 0.1, 0.1, 0.1, None, 1, 1, 1, 1, 1]
+#"MAX_BODYSIZE",
+params_default_body = [50, 0.1, 0.1, 0.1, 1, None, 1, 1, 1, 1]
+#"MIN_ARGSLEVEL",
+params_default_arglvl = [50, 0.1, 0.1, 0.1, 1, 1, None, 1, 1, 1]
+#"LEVELS",
+params_default_lvl = [50, 0.1, 0.1, 0.1, 1, 1, 1, None, 1, 1]
+#"RAMIFICATION",
+params_default_deft = [50, 0.1, 0.1, 0.1, 1, 1, 1, 1, None, 1]
+#"TREE_HEIGHT"
+params_default_height = [50, 0.1, 0.1, 0.1, 1, 1, 1, 1, 1, None]
+# All defaults values
+defaults_values = [
+        params_default_base,
+        params_default_facts,
+        params_default_neg,
+        params_default_drul,
+        params_default_heads,
+        params_default_body,
+        params_default_arglvl,
+        params_default_lvl,
+        params_default_deft,
+        params_default_height
+        ]
 
 # Utils
 utils = Utils()
@@ -119,29 +157,32 @@ def create_datasets(dp):
     Args:
         dp: Directory path to sava dataset
     """
+    test_parameter = "KBBASE_SIZE"
     check_directory = os.path.isdir(dp)
     if not check_directory:
         print("The specified directory does not exist")
         sys.exit()
     else:
         for i in range(len(params)):
-            param_to_variate = params[i]
-            param_path = dp + param_to_variate
-            os.mkdir(param_path)
-            variation = list(np.arange(params_min[i],
-                                       params_max[i],
-                                       params_steps[i]))
-            variation = [int(value) if isinstance(value, np.integer) else
-                         float(np.round(value, 1)) for value in variation]
-            if args.min:
-                p_values = copy.copy(params_default_min)
-            elif args.med:
-                p_values = copy.copy(params_default_med)
-            elif args.max:
-                p_values = copy.copy(params_default_max)
-            for value in variation:
-                p_values[i] = value
-                generate_programs(param_path + '/' + str(value), p_values)
+            if params[i] == test_parameter:
+                param_to_variate = params[i]
+                param_path = dp + param_to_variate
+                os.mkdir(param_path)
+                variation = list(np.arange(params_min[i],
+                                           params_max[i],
+                                           params_steps[i]))
+                variation = [int(value) if isinstance(value, np.integer) else
+                             float(np.round(value, 1)) for value in variation]
+                p_values = copy.copy(defaults_values[i])
+                #if args.min:
+                #    p_values = copy.copy(params_default_min)
+                #elif args.med:
+                #    p_values = copy.copy(params_default_med)
+                #elif args.max:
+                #    p_values = copy.copy(params_default_max)
+                for value in variation:
+                    p_values[i] = value
+                    generate_programs(param_path + '/' + str(value), p_values)
         print("Dataset created")
 
 
@@ -188,25 +229,44 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str) -> None:
             value_metrics.append(load_metrics['times']['mean'])
             writer.writerow(value_params + value_metrics)
         f.close()
+    
     # To draw and save correlation matrix
     data_csv = pd.read_csv(dp + parameter + 'metrics_csv.csv')
     p_csv = data_csv[[parameter] + metrics]
     labels = [parameter] + metrics
-    # MATRIXES
-    matrix_pearson = round(p_csv.corr(method='pearson'), 2)
-    #matrix_kendall = round(p_csv.corr(method='kendall'), 2)
-    #matrix_spearman = round(p_csv.corr(method='spearman'), 2)
-    #matrix_cov = round(p_csv.cov(), 2)
     
-    # To create matrix with all parameters
-    corr_param = matrix_pearson[parameter]
-    # PRINT THE PLOTS FOR EACH PARAMETER
+    # Pearson Correlation
+    matrix_pearson = round(p_csv.corr(method='pearson'), 2)
     print_matrix_plot(labels, matrix_pearson, (dp + parameter + "plot_pearson_" + parameter + ".png"))
+    corr_param = matrix_pearson[parameter]
+    p_values = generate_pvalues_matrix(dp, p_csv)
+    
+    # Kendall Correlation
+    #matrix_kendall = round(p_csv.corr(method='kendall'), 2)
     #print_matrix_plot(labels, matrix_kendall, (dp + parameter + "plot_kendall_" + parameter + ".png"))
+    
+    # Spearman Correlation
+    #matrix_spearman = round(p_csv.corr(method='spearman'), 2)
     #print_matrix_plot(labels, matrix_spearman, (dp + parameter + "plot_spearman_" + parameter + ".png"))
+    
+    # Cov Correlation
+    #matrix_cov = round(p_csv.cov(), 2)
     #print_matrix_plot(labels, matrix_cov, (dp + parameter + "plot_cov_" + parameter + ".png"))
 
     return corr_param
+
+
+def generate_pvalues_matrix(dp, df):
+    dfcols = pd.DataFrame(columns=df.columns)
+    pvalues = dfcols.transpose().join(dfcols, how='outer')
+    for r in df.columns:
+        for c in df.columns:
+            tmp = df[df[r].notnull() & df[c].notnull()]
+            p_value = round(pearsonr(df[r], df[c])[1],4)
+            pvalues[r][c] = str(p_value) + ''.join(['*' for t in [.05, .01, .001] if p_value
+                <= t])
+    return pvalues
+
 
 def nan_to_cero(number):
     if pd.isna(number):
@@ -263,9 +323,17 @@ def generate_correlations_matrix(dp, correlations):
     plt.savefig(dp + 'correlations.png', dpi=300, bbox_inches='tight')
     plt.close()
 
-
+def remove_old_files(dp):
+    fileList = glob.glob(dp + "*.csv")
+    files = fileList + glob.glob(dp + "*.png")
+    for filePath in files:
+        try:
+            os.remove(filePath)
+        except e:
+            print(bcolors.WARNING + "Error while deleting file: ", filePath)
 
 def analyze_corr(dp: str) -> None:
+    remove_old_files(dp)
     # To analyze correlations
     parameters = os.listdir(dp)
     corr_params = pd.DataFrame()
@@ -304,18 +372,18 @@ parser.add_argument('-compute',
 parser.add_argument('-analyze',
                     action='store_true',
                     help='To analyze metrics')
-parser.add_argument('-min',
-                    action='store_true',
-                    help='To use the minimum default values for parameters' \
-                         ' that do no vary in each configuration')
-parser.add_argument('-med',
-                    action='store_true',
-                    help='To use the medium default values for parameters' \
-                         ' that do no vary in each configuration')
-parser.add_argument('-max',
-                    action='store_true',
-                    help='To use the maximum default values for parameters' \
-                         ' that do no vary in each configuration')
+#parser.add_argument('-min',
+#                    action='store_true',
+#                    help='To use the minimum default values for parameters' \
+#                         ' that do no vary in each configuration')
+#parser.add_argument('-med',
+#                    action='store_true',
+#                    help='To use the medium default values for parameters' \
+#                         ' that do no vary in each configuration')
+#parser.add_argument('-max',
+#                    action='store_true',
+#                    help='To use the maximum default values for parameters' \
+#                         ' that do no vary in each configuration')
 
 parser.add_argument('-n',
                     type=int,

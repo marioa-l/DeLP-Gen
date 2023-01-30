@@ -93,7 +93,7 @@ class ComputeMetrics:
         literals_to_query = self.get_random_querys(program_literals, perc)
         cmd = ['./globalCore', 'file', delpProgram, literals_to_query[0]]
         try:
-            # TimeOut 30 minutes
+            # TimeOut 15 minutes
             output = check_output(cmd, stderr=STDOUT, timeout=900). \
                 decode(sys.stdout.encoding)
             result = json.loads(output)
@@ -111,7 +111,7 @@ class ComputeMetrics:
         print("\nProgram: ", delpProgram)
         cmd = ['./globalCore', 'file', delpProgram, 'all']
         try:
-            # TimeOut 30 minutes
+            # TimeOut 15 minutes
             output = check_output(cmd, stderr=STDOUT, timeout=900). \
                 decode(sys.stdout.encoding)
             result = json.loads(output)
