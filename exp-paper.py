@@ -73,7 +73,7 @@ params = [
 params_min = [0, 0.1, 0.1, 0.1, 1, 1, 1, 1, 1, 1]
 
 # The maximum value for each parameter (not inclusive)
-params_max = [200, 1.0, 1.0, 1.0, 6, 6, 6, 11, 6, 6]
+params_max = [220, 1.0, 1.0, 1.0, 6, 6, 6, 11, 6, 6]
 
 # The parameter steps 
 params_steps = [20, 0.1, 0.1, 0.1, 1, 1, 1, 1, 1, 1]
