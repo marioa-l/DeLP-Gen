@@ -347,7 +347,7 @@ def analyze_corr(dp: str) -> None:
         p_values[parameter] = p_value_param.iloc[1:]
         print("...complete")
     print("\nAll Complete")
-    generate_correlations_matrix(dp, corr_params, p_values)
+    generate_correlations_matrix(dp, corr_params.loc[:,params], p_values.loc[:,params])
 
 
 """
