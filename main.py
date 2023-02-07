@@ -27,7 +27,7 @@ class Test:
 
     def test_generator(self, dataset_path):
         generator = Generator()
-        params = self.utils.get_data_from_file(dataset_path + 'parameters.json')
+        params = get_data_from_file(dataset_path + 'parameters.json')
         generator.generate(dataset_path, params)
         print("Complete")
     
@@ -55,7 +55,7 @@ class Test:
         csv_file = open(save_path + '/defs.csv', 'w')
         writer = csv.writer(csv_file)
         for file_output in glob.glob(save_path + '*OUTPUT.json'):
-            data = self.utils.get_data_from_file(file_output)
+            data = get_data_from_file(file_output)
             # write the header
             writer.writerow(['arg1','arg2','defeater'])
             for key, value in data.items():

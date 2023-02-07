@@ -43,6 +43,15 @@ metrics = ["base",
            "h",
            "times"]
 
+std_metrics = ["std_base",
+            "std_rules",
+            "std_args",
+            "std_addl",
+            "std_t",
+            "std_b",
+            "std_h",
+            "std_times"]
+
 """
 ### DPG Parameters ###
 - ext_seed: Minimum number of facts and presumptions.
@@ -148,7 +157,7 @@ def generate_programs(dp: str, p_values: list) -> None:
     with open(dp + '/parameters.json', 'w') as output:
         json.dump(parameters_values, output, indent=4)
     generator = Generator()
-    params_to_gen = utils.get_data_from_file(dp + '/parameters.json')
+    params_to_gen = get_data_from_file(dp + '/parameters.json')
     generator.generate(dp + '/', params_to_gen)
 
 
@@ -214,11 +223,11 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str) -> None:
         parameter: Parameter to analyze
     """
     variations = os.walk(parameter_directory)
-    variations = sorted(next(variations)[1], key=utils.string_to_int_float)
+    variations = sorted(next(variations)[1], key=string_to_int_float)
     csv_fp = dp + parameter + 'metrics_csv.csv'
     with open(csv_fp, 'w') as f:
         writer = csv.writer(f)
-        writer.writerow(params + metrics)
+        writer.writerow(params + metrics + std_metrics)
         for variation in variations:
             path = parameter_directory + variation + '/'
             load_params = json.load(open(path + 'parameters.json'))
@@ -226,7 +235,9 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str) -> None:
             value_params = [load_params[p] for p in params]
             value_metrics = [load_metrics[m]['mean'] for m in metrics if m != 'times']
             value_metrics.append(load_metrics['times']['mean'])
-            writer.writerow(value_params + value_metrics)
+            std_value_metrics = [load_metrics[m]['std'] for m in metrics if m != 'times']
+            std_value_metrics.append(load_metrics['times']['std'])
+            writer.writerow(value_params + value_metrics + std_value_metrics)
         f.close()
 
     # To draw and save correlation matrix

@@ -36,10 +36,10 @@ class ComputeMetrics:
         """
         Show experiment settings
         """
-        self.utils.print_info("Output path: " + self.path_file_results)
-        self.utils.print_info("Result file: " + self.file_results_name)
-        self.utils.print_info("Dataset: " + self.path_dataset)
-        self.utils.print_info("Delp program: " + self.path_delp)
+        print_info("Output path: " + self.path_file_results)
+        print_info("Result file: " + self.file_results_name)
+        print_info("Dataset: " + self.path_dataset)
+        print_info("Delp program: " + self.path_delp)
 
     def build_path_result(self) -> str:
         """
@@ -88,7 +88,7 @@ class ComputeMetrics:
         delpProgram = self.path_delp
         print("\nProgram: ", delpProgram)
         delpProgram_json = delpProgram.replace(".delp", ".json")
-        program_literals = self.utils.get_data_from_file(delpProgram_json)
+        program_literals = get_data_from_file(delpProgram_json)
         program_literals = program_literals["literals"]
         literals_to_query = self.get_random_querys(program_literals, perc)
         cmd = ['./globalCore', 'file', delpProgram, literals_to_query[0]]
@@ -218,7 +218,7 @@ class ComputeMetrics:
             avg_arg_lines = n_arg_lines / tree_numbers  # N° lines / N° Trees
         # To save the arguments and its defeaters
         if defs:
-            self.utils.write_result(self.path_file_results + id_p + 'OUTPUT.json', args_defs)
+            write_result(self.path_file_results + id_p + 'OUTPUT.json', args_defs)
         return {
             'n_arguments': int(n_arguments),
             'n_defeaters': int(n_defeaters),
@@ -228,7 +228,7 @@ class ComputeMetrics:
             'avg_height_lines': float('{0:.2f}'.format(avg_height_lines))
         }
 
-    def load(self, defs, id_p, method, perc):
+    def compute_metrics(self, defs, id_p, method, perc):
         initial_time = time.time()
         core_response = method(perc)
         end_time = time.time()
@@ -259,7 +259,7 @@ class ComputeMetrics:
         def_rules = []
         arg_lines = []
         height_lines = []
-        data = self.load(defs, '0')
+        data = self.compute_metrics(defs, '0')
         arguments.append(data['n_arguments'])
         defeaters.append(data['n_defeaters'])
         n_trees.append(data['n_trees'])
@@ -267,95 +267,91 @@ class ComputeMetrics:
         arg_lines.append(data['avg_arg_lines'])
         height_lines.append(data['avg_height_lines'])
 
-        self.compute_save_metrics(arguments, def_rules, n_trees, arg_lines,
-                                  height_lines, self.times, self.rules,
-                                  self.fact_presum)
+        self.compute_save_metrics(arguments, def_rules, n_trees, arg_lines, height_lines, self.rules, self.fact_presum)
 
-    def compute_save_metrics(self, arguments: list, def_rules: list, n_trees:
-    list, arg_lines: list, height_lines: list,
-                             times: list, rules: int,
-                             fact_presum: int) -> None:
-        # metric_args = sum(arguments) / len(arguments)
-        # mddl = sum(def_rules) / len(def_rules)
-        # t = sum(arg_lines) / len(arg_lines)
-        # h = sum(height_lines) / len(height_lines)
+    def compute_save_metrics(self, arguments: list, def_rules: list, n_trees: list, arg_lines: list, height_lines: list,
+                             rules: list, facts_presumptions: list) -> None:
         min_time = min(self.times)
         max_time = max(self.times)
-        # mean_time = sum(self.times) / len(self.times)
-        # mean_rules = sum(rules) / len(rules)
-        # mean_fact_presum = sum(fact_presum) / len(fact_presum)
 
         results = {
             'args':
                 {
-                    'mean': self.utils.my_round(np.mean(arguments)),
-                    'std': self.utils.my_round(np.std(arguments))
+                    'mean': my_round(np.mean(arguments)),
+                    'std': my_round(np.std(arguments))
                 },
             'addl':
                 {
-                    'mean': self.utils.my_round(np.mean(def_rules)),
-                    'std': self.utils.my_round(np.std(def_rules))
+                    'mean': my_round(np.mean(def_rules)),
+                    'std': my_round(np.std(def_rules))
                 },
             't':
                 {
-                    'mean': self.utils.my_round(np.mean(n_trees)),
-                    'std': self.utils.my_round(np.std(n_trees))
+                    'mean': my_round(np.mean(n_trees)),
+                    'std': my_round(np.std(n_trees))
                 },
             'b':
                 {
-                    'mean': self.utils.my_round(np.mean(arg_lines)),
-                    'std': self.utils.my_round(np.std(arg_lines))
+                    'mean': my_round(np.mean(arg_lines)),
+                    'std': my_round(np.std(arg_lines))
                 },
             'h':
                 {
-                    'mean': self.utils.my_round(np.mean(height_lines)),
-                    'std': self.utils.my_round(np.std(height_lines))
+                    'mean': my_round(np.mean(height_lines)),
+                    'std': my_round(np.std(height_lines))
                 },
             'times': {
                 'min': float('{:0.2f}'.format(min_time)),
                 'max': float('{:0.2f}'.format(max_time)),
-                'mean': self.utils.my_round(np.mean(self.times)),
-                'std': self.utils.my_round(np.std(self.times))
+                'mean': my_round(np.mean(self.times)),
+                'std': my_round(np.std(self.times))
             },
             'rules': {
-                'mean': self.utils.my_round(np.mean(rules)),
-                'std': self.utils.my_round(np.std(rules))
+                'mean': my_round(np.mean(rules)),
+                'std': my_round(np.std(rules))
             },
             'base': {
-                'mean': self.utils.my_round(np.mean(fact_presum)),
-                'std': self.utils.my_round(np.std(fact_presum))
+                'mean': my_round(np.mean(facts_presumptions)),
+                'std': my_round(np.std(facts_presumptions))
             }
         }
 
-        self.utils.write_result(self.build_path_result(), results)
+        write_result(self.build_path_result(), results)
 
     def compute_dataset(self, dataset_length, defs, approx_metrics, perc):
-        global height_lines
+        """
+        Computes the metrics of a set of DeLP programs.
+        Args:
+            dataset_length: Number of programs in the dataset
+            # TODO: Complete this parameters
+            defs:
+            approx_metrics:
+            perc:
+
+        Returns:
+            Computes and generates a file with the value of the metrics of a dataset
+        """
         if approx_metrics:
             method_compute_metrics = self.query_delp_solver_aprox
         else:
             method_compute_metrics = self.query_delp_solver
-
         arguments = []
         defeaters = []
         n_trees = []
         def_rules = []
         arg_lines = []
         height_lines = []
-
-        # spinner = Spinner("Processing")
+        # TODO: Refactor the way to load the dataset (glob with order)
         for count in range(dataset_length):
-            filePath = self.path_dataset + str(count) + 'delp' + '.delp'
-            self.path_delp = filePath
-            data = self.load(defs, str(count), method_compute_metrics, perc)
+            file_path = self.path_dataset + str(count) + 'delp' + '.delp'
+            self.path_delp = file_path
+            data = self.compute_metrics(defs, str(count), method_compute_metrics, perc)
             arguments.append(data['n_arguments'])
             defeaters.append(data['n_defeaters'])
             n_trees.append(data['n_trees'])
             def_rules.append(data['avg_def_rules'])
             arg_lines.append(data['avg_arg_lines'])
             height_lines.append(data['avg_height_lines'])
-            # spinner.next()
-
         self.compute_save_metrics(arguments, def_rules, n_trees, arg_lines,
                                   height_lines, self.times,
                                   self.rules, self.fact_presum)

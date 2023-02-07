@@ -207,11 +207,11 @@ class Generator:
         Output:
             - A string that represent a literal 
         """
-        polarity = self.utils.get_random()
+        polarity = get_random()
 
         atom = 'a_' + self.get_new_id()
         if polarity < self.params["NEG_PROB"]:
-            literal = self.utils.get_complement(atom)
+            literal = get_complement(atom)
         else:
             literal = atom
         
@@ -233,7 +233,7 @@ class Generator:
                 --'drules': Save as defeasible rule
         """
         if r_type == 'rnd':
-            random_DS = self.utils.get_random()
+            random_DS = get_random()
             if random_DS < self.params["DRULE_PROB"]:
                 self.levels[level]['drules'].append((head, body))
                 self.rules['drules'].append(head)
@@ -267,11 +267,11 @@ class Generator:
         possibles_srules = [index for index, srule in 
                                     enumerate(self.levels[level]["srules"]) if 
                                     srule[0] not in self.USED_HEADS]   
-        random_DS = self.utils.get_random()
+        random_DS = get_random()
         if random_DS < self.params["DRULE_PROB"]:
             if len(possibles_drules) != 0:
                 # Take a drule (its position) from level <level>
-                index_drule = self.utils.get_choice(possibles_drules)
+                index_drule = get_choice(possibles_drules)
                 rule = ('drules', level, index_drule)
             else:
                 # Build a drule and put into the level <level>?
@@ -283,7 +283,7 @@ class Generator:
         else:
             if len(possibles_srules) != 0:
                 # Take a srule (its position) from level <level>
-                index_srule = self.utils.get_choice(possibles_srules)
+                index_srule = get_choice(possibles_srules)
                 rule = ('srules', level, index_srule)
             else:
                 # Build a srule and put into the level <level>?
@@ -308,17 +308,17 @@ class Generator:
         body = ()
         # To not add the conclusion or its complement in the body 
         self.USED_HEADS = self.USED_HEADS + (conclusion,)
-        complement_conclusion = self.utils.get_complement(conclusion)
+        complement_conclusion = get_complement(conclusion)
         self.USED_HEADS = self.USED_HEADS + (complement_conclusion,)
 
-        body_size = self.utils.get_randint(1, self.params["MAX_BODYSIZE"])
+        body_size = get_randint(1, self.params["MAX_BODYSIZE"])
         rule = self.get_one_rule_level(level - 1)
         rule_head = self.get_head(rule[1], rule[0], rule[2])
         self.USED_HEADS = self.USED_HEADS + (rule_head,)
         body = body + (rule,)
 
         for aux in range(body_size - 1):
-            select_level = self.utils.get_choice(level)
+            select_level = get_choice(level)
             new_rule = self.get_one_rule_level(select_level)
             new_rule_head = self.get_head(new_rule[1], new_rule[0], new_rule[2])
             self.USED_HEADS = self.USED_HEADS + (new_rule_head,)
@@ -355,7 +355,7 @@ class Generator:
             # Generate a new head (conclusion)
             head = self.get_new_literal()
             # To define how many arguments with the same head to create
-            args_head = self.utils.get_randint(1, self.params["MAX_RULESPERHEAD"])
+            args_head = get_randint(1, self.params["MAX_RULESPERHEAD"])
             # Build all arguments for <head>
             for j_aux in range(args_head):
                 # Generete the body of the argument
@@ -477,13 +477,13 @@ class Generator:
             new_def_lit = self.get_new_literal().replace('a','d')
             #self.LITERALS.append(new_def_lit)
             self.add_to_kb(0,new_def_lit, ('true',),'drules')
-            ntact_def = copy.copy(self.utils.get_choice(ntact_sets))
+            ntact_def = copy.copy(get_choice(ntact_sets))
             ntact_def.add(new_def_lit)
 
 
 
             body_def = list(ntact_def)
-            head_def = self.utils.get_complement(head)
+            head_def = get_complement(head)
             #self.LITERALS.append(head_def)
             self.add_to_kb(self.params["LEVELS"] + 1, head_def, body_def, 'drules')
             self.USED_NTACTSETS.append(ntact_def)
@@ -533,7 +533,7 @@ class Generator:
             self.USED_NTACTSETS = []       
             for defeater in defeaters:
                 if len(defeater) != 0: 
-                    ram = self.utils.get_randint(1, ram)
+                    ram = get_randint(1, ram)
                     self.build_tree(defeater[0], defeater[1], height - 1, ram)
 
 
@@ -544,7 +544,7 @@ class Generator:
         self.levels[0] = {'drules': [], 'srules': []}
         self.LITERALS[0] = []
         for i in range(self.params["KBBASE_SIZE"]):
-            random_FP = self.utils.get_random()
+            random_FP = get_random()
             literal = self.get_new_literal()
             if random_FP < self.params["FACT_PROB"]:
                 # New Fact
@@ -600,7 +600,7 @@ class Generator:
             outfile.write(to_string)
         
         filtered_literals =  {k: v for k, v in self.LITERALS.items() if v != []}
-        self.utils.write_result(result_path + str(id_program) + 'delp' + '.json', {
+        write_result(result_path + str(id_program) + 'delp' + '.json', {
                     'delp': delp_json,
                     'literals': filtered_literals
                     })
