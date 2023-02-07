@@ -43,14 +43,87 @@ INNER_PROB
 N_PROGRAMS
 """
 
+
+def find_rule(conclusion: str, complete_argument: list) -> list:
+    """
+    Find and return the body literals of a rule in a complete argument
+    with conclusion <conclusion> and its type (drule o srule)
+    Args:
+        -conclusion: The conclusions of argument
+        -complete_argument: The complete argument
+    Output:
+        -[body_literals, tipo]:
+            --body_literals: The literals of the body
+            --tipo: 'drule' or 'srule'
+    """
+    try:
+        rule = next(rule for rule in complete_argument if rule[0] == conclusion)
+        literals_tipo = [set(rule[2]), rule[1]]
+        return literals_tipo
+    except StopIteration:
+        # Facts or Presumptions
+        return [set(), '']
+
+
+def build_actntactsets(conclusion: str, complete_argument: list) -> dict:
+    """
+    Compute the Act-sets and NTAct-sets of the argument <complete_argument>
+    Args:
+        -complete_argument: The complete argument
+        -conclusion: The conclusion of the argument
+    Output:
+        -dict:{
+            'act_sets': set,
+            'ntact_sets': set
+        }
+    """
+    c = [[{conclusion}, 'trivial']]
+    act_sets = []
+    ntact_sets = []
+    exp_sets = []
+    while True:
+        [conj, tipo] = c.pop(0)
+        for lit in conj:
+            [new_actset, type_rule] = find_rule(lit, complete_argument)
+            if len(new_actset) != 0:
+                if tipo == 'trivial' and type_rule == 'srule':
+                    # The new act set is 'trivial'
+                    type_new_actset = 'trivial'
+                else:
+                    # The new act set is 'no trivial'
+                    type_new_actset = 'no trivial'
+                if new_actset not in exp_sets:
+                    c.append([new_actset, type_new_actset])
+        act_sets.append(conj)
+        if tipo == 'no trivial':
+            ntact_sets.append(conj)
+        exp_sets.append(conj)
+        if len(c) == 0:
+            break
+    return {
+            'act_sets': act_sets,
+            'ntact_sets': ntact_sets
+            }
+
+
+def is_defeasible(complete_argument: list) -> bool:
+    """
+    Determine if an argument is defeasible or not
+    Args:
+        -complete_argument: The complete argument
+    """
+    try:
+        next(rule for rule in complete_argument if rule[1] == 'drules')
+        return True
+    except StopIteration:
+        return False
+
+
 class Generator:
 
     # Symbols
     srule_symbol = '<-'
     drule_symbol = '-<'
-
-    #Utils
-    utils = Utils()
 
     def __init__(self) -> None:
         """
@@ -58,7 +131,7 @@ class Generator:
         """
         
         """
-        Define default values for all hyperparameters
+        Define default values for all hyper parameters
         """ 
         self.params = {
                 "KBBASE_SIZE": 5,
@@ -77,7 +150,7 @@ class Generator:
                 }
 
         """
-        Global values and auxiliar structures
+        Global values and assistant structures
         """
         # Index of literals
         self.COUNT_LIT = 0
@@ -92,7 +165,7 @@ class Generator:
         """
         Structure to save all rules
         """
-        self.rule = {
+        self.rules = {
                 'drules': [],
                 'srules': [],
                 'facts': [],
@@ -103,10 +176,8 @@ class Generator:
         self.levels = {}
         """"""
 
-
     def define_hyperparams(self, hyperparams: dict) -> None:
         self.params = copy.copy(hyperparams)
-
 
     def clear_datastructures(self) -> None:
         """
@@ -124,17 +195,15 @@ class Generator:
                 }
         self.levels = {}
 
-
     def get_new_id(self) -> str:
         """
         Return an id for literal and update the counter
         """
-        id = str(self.COUNT_LIT)
+        id_literal = str(self.COUNT_LIT)
         self.COUNT_LIT += 1
-        return id
+        return id_literal
 
-
-    def create_strict_rule(self, head: str, body: Union[list,tuple]) -> str:
+    def create_strict_rule(self, head: str, body: Union[list, tuple]) -> str:
         """
         Create a strict rule.
         Args:
@@ -151,7 +220,6 @@ class Generator:
 
         return str(head + ' ' + self.srule_symbol + ' ' + body_string + '.')
 
-
     def create_def_rule(self, head: str, body: Union[list, tuple]) -> str:
         """
         Create a defeasible rule.
@@ -163,7 +231,7 @@ class Generator:
             if body[0] != 'true':
                 body_string = ','.join(body)
             else:
-                # Is fact or presumptio
+                # Is fact or presumption
                 body_string = 'true'
         else:
             # Is rule
@@ -171,7 +239,6 @@ class Generator:
             body_string = ','.join(body_literals)
 
         return str(head + ' ' + self.drule_symbol + ' ' + body_string + '.')
-   
 
     def get_head(self, level: int, tipo: str, pos: int) -> str:
         """
@@ -182,7 +249,6 @@ class Generator:
             -pos: The index of the rule inside the type and level
         """
         return self.levels[level][tipo][pos][0]
-
 
     def get_body_literals(self, body: list) -> list:
         """
@@ -199,7 +265,6 @@ class Generator:
             body_literals.append(literal)
         return body_literals
 
-
     def get_new_literal(self) -> str:
         """
         Create and return a new literal for the program
@@ -208,16 +273,12 @@ class Generator:
             - A string that represent a literal 
         """
         polarity = get_random()
-
         atom = 'a_' + self.get_new_id()
         if polarity < self.params["NEG_PROB"]:
             literal = get_complement(atom)
         else:
             literal = atom
-        
-        #self.LITERALS.append(literal)
         return literal
-
 
     def add_to_kb(self, level: int, head: str, body: list, r_type: str) -> None:
         """
@@ -227,14 +288,14 @@ class Generator:
             -head: The head of the argument
             -body: Body of the argument
             -r_type: The type of rule with <head> as its consequent. Options:
-                --'rnd': Randomly assign whether it will be a strict rule or 
+                --rnd: Randomly assign whether it will be a strict rule or
                 a defeasible rule (considering the params DEF_PROB).
-                --'srules': Save as strict rule
-                --'drules': Save as defeasible rule
+                --srules: Save as strict rule
+                --drules: Save as defeasible rule
         """
         if r_type == 'rnd':
-            random_DS = get_random()
-            if random_DS < self.params["DRULE_PROB"]:
+            random_ds = get_random()
+            if random_ds < self.params["DRULE_PROB"]:
                 self.levels[level]['drules'].append((head, body))
                 self.rules['drules'].append(head)
                 self.LITERALS[level].append(head)
@@ -247,8 +308,6 @@ class Generator:
             self.rules[r_type].append(head)
             self.LITERALS[level].append(head)
 
-
-
     def get_one_rule_level(self, level: int) -> tuple:
         """
         Select a rule from possibles rules to build an argument body
@@ -260,22 +319,19 @@ class Generator:
                 --level: Level of the rule
                 --pos: Index of the rule in the level <level>
         """
-        #self.utils.print_info(str(self.USED_HEADS))
-        possibles_drules = [index for index, drule in 
-                                    enumerate(self.levels[level]["drules"]) if 
-                                    drule[0] not in self.USED_HEADS]
-        possibles_srules = [index for index, srule in 
-                                    enumerate(self.levels[level]["srules"]) if 
-                                    srule[0] not in self.USED_HEADS]   
-        random_DS = get_random()
-        if random_DS < self.params["DRULE_PROB"]:
+        possibles_drules = [index for index, drule in enumerate(self.levels[level]["drules"]) if drule[0] not in
+                            self.USED_HEADS]
+        possibles_srules = [index for index, srule in enumerate(self.levels[level]["srules"]) if srule[0] not in
+                            self.USED_HEADS]
+        random_ds = get_random()
+        if random_ds < self.params["DRULE_PROB"]:
             if len(possibles_drules) != 0:
                 # Take a drule (its position) from level <level>
                 index_drule = get_choice(possibles_drules)
                 rule = ('drules', level, index_drule)
             else:
                 # Build a drule and put into the level <level>?
-                #self.utils.print_error("No more drules!")
+                # No more drules
                 lit = self.get_new_literal()
                 self.levels[0]['drules'].append((lit, ('true',)))
                 self.LITERALS[0].append(lit)
@@ -287,14 +343,12 @@ class Generator:
                 rule = ('srules', level, index_srule)
             else:
                 # Build a srule and put into the level <level>?
-                #self.utils.print_error("No more srules!")
+                # No more srules!
                 lit = self.get_new_literal()
                 self.levels[0]['srules'].append((lit, ('true',)))
                 self.LITERALS[0].append(lit)
                 rule = ('srules', 0, len(self.levels[0]['srules']) - 1)
-        #self.utils.print_error(str(rule))
         return rule
-
 
     def build_body(self, level: int, conclusion: str) -> list:
         """
@@ -326,17 +380,15 @@ class Generator:
         
         self.USED_HEADS = ()
         return body 
-    
 
     def clean_level(self, level: int) -> None:
         """
-        Delte all duplicate in level <level>
+        Delete all duplicate in level <level>
         Args:
             -level: The level to clean
         """
         self.levels[level]['drules'] = list(set(self.levels[level]['drules']))
         self.levels[level]['srules'] = list(set(self.levels[level]['srules']))
-
 
     def build_arguments(self, level: int) -> None:
         """"
@@ -348,7 +400,7 @@ class Generator:
         self.levels[level] = {'drules': [], 'srules': []}
         # To save all literals
         self.LITERALS[level] = []
-        # Min number of different argumens in the level
+        # Min number of different arguments in the level
         min_args = self.params["MIN_ARGSLEVEL"]
 
         for i_aux in range(min_args):
@@ -358,7 +410,7 @@ class Generator:
             args_head = get_randint(1, self.params["MAX_RULESPERHEAD"])
             # Build all arguments for <head>
             for j_aux in range(args_head):
-                # Generete the body of the argument
+                # Generate the body of the argument
                 body = self.build_body(level, head)
                 # Add to the KB
                 self.add_to_kb(level, head, body, 'rnd') 
@@ -383,108 +435,16 @@ class Generator:
             return rule
         else:
             # Is fact or presumption
-            return []  
+            return []
 
-
-    def find_rule(self, conclusion: str, complete_argument: list) -> list:
-        """
-        Find and return the body literals of a rule in a complete argument
-        with conclusion <conclusion> and its type (drule o srule)
-        Args:
-            -conclusion: The conclusions of argument
-            -complete_argument: The complete argument
-        Output:
-            -[body_literals, tipo]:
-                --body_literals: The literals of the body
-                --tipo: 'drule' or 'srule'
-        """
-        try:
-            rule = next(rule for rule in complete_argument 
-                                                if rule[0] == conclusion) 
-            literals_tipo = [set(rule[2]), rule[1]]
-            return literals_tipo
-        except StopIteration:
-            return [set(),''] # Facts or Presumptions
-
-    def build_actntactsets(self, conclusion: str, complete_argument: list) -> dict:
-        """
-        Compute the Act-sets and NTAct-sets of the argument <complete_argument>
-        Args:
-            -complete_argument: The complete argument
-            -conclusion: The conclusion of the argument
-        Output:
-            -dict:{
-                'act_sets': set,
-                'ntact_sets': set
-            }
-        """
-        c = [[{conclusion}, 'trivial']]
-        act_sets = []
-        ntact_sets = []
-        exp_sets = []
-        while True:
-            [conj, tipo] = c.pop(0)
-            for lit in conj:
-                [new_actset, type_rule] = self.find_rule(lit, complete_argument)
-                if len(new_actset) != 0:
-                    if tipo == 'trivial' and type_rule == 'srule':
-                        # The new act set is 'trivial'
-                        type_new_actset = 'trivial'
-                    else:
-                        # The new act set is 'no trivial'
-                        type_new_actset = 'no trivial'
-                    if new_actset not in exp_sets:
-                        c.append([new_actset, type_new_actset])
-            act_sets.append(conj)
-            if tipo == 'no trivial':
-                ntact_sets.append(conj)
-            exp_sets.append(conj)
-            if len(c) == 0:
-                break
-        return {
-                'act_sets': act_sets,
-                'ntact_sets': ntact_sets
-                }
-
-
-    def is_defeasible(self, complete_argument: list) -> bool:
-        """
-        Determine if an argument is defeasible or not
-        Args:
-            -complete_argument: The complete argument
-        """ 
-        try:
-            next(rule for rule in complete_argument if rule[1] == 'drules')
-            return True
-        except StopIteration:
-            return False
-
-
-    def build_defeater(self, head: str, ntact_sets: list, tipo: str) -> list:
+    def build_defeater(self, head: str, ntact_sets: list, type: str) -> list:
         if len(ntact_sets) != 0 and ntact_sets[0] != '':
-            #possibles_ntact = [ntact for ntact in ntact_sets if 
-            #        ntact not in self.USED_NTACTSETS]
-            #
-            #if len(possibles_ntact) != 0:
-            #    # Choice from ntactsets of the defeated argument (for 'blocking')
-            #    ntact_def = self.utils.get_choice(ntact_sets)
-            #else:
-            #    # Build new ntactset for the defeater's body? (proper)
-            #    new_def_lit = self.get_new_literal().replace('a','d')
-            #    self.add_to_kb(0,new_def_lit, ('true',),'drules')
-            #    ntact_def = copy.copy(self.utils.get_choice(ntact_sets))
-            #    ntact_def.add(new_def_lit) 
-            new_def_lit = self.get_new_literal().replace('a','d')
-            #self.LITERALS.append(new_def_lit)
-            self.add_to_kb(0,new_def_lit, ('true',),'drules')
+            new_def_lit = self.get_new_literal().replace('a', 'd')
+            self.add_to_kb(0, new_def_lit, ('true',), 'drules')
             ntact_def = copy.copy(get_choice(ntact_sets))
             ntact_def.add(new_def_lit)
-
-
-
             body_def = list(ntact_def)
             head_def = get_complement(head)
-            #self.LITERALS.append(head_def)
             self.add_to_kb(self.params["LEVELS"] + 1, head_def, body_def, 'drules')
             self.USED_NTACTSETS.append(ntact_def)
             return [head_def, [ntact_def]]
@@ -492,7 +452,6 @@ class Generator:
             # Argument without ntactsets (the base of the KB)
             return []
 
-        
     def build_dialectical_trees(self) -> None:
         """
         To build all dialectical trees for arguments in the top level of the
@@ -505,18 +464,17 @@ class Generator:
         for tipo, args in self.levels[self.params["LEVELS"]].items():
             for argument in args: 
                 complete_arg = self.build_complete_arguments(argument, tipo)
-                if self.is_defeasible(complete_arg):
-                    actntact_sets = self.build_actntactsets(argument[0], complete_arg)
-                    self.build_tree(argument[0], actntact_sets["ntact_sets"],
-                                                    tree_height, ramification) 
+                if is_defeasible(complete_arg):
+                    actntact_sets = build_actntactsets(argument[0], complete_arg)
+                    self.build_tree(argument[0], actntact_sets["ntact_sets"], tree_height, ramification)
 
     def build_tree(self, head: str, ntact_sets: list, height: int, ram: int) -> None:
         """
         Build the dialectical tree for a particular argument
         Args:
-            -head: The conclusion of the root arguement
+            -head: The conclusion of the root argument
             -ntact_sets: A list with all the ntact sets of the root argument
-            -height: The hight of the tree to be constructed
+            -height: The height of the tree to be constructed
             -ram: Ramification factor (number of different defeats for an 
             argument)
         """
@@ -536,7 +494,6 @@ class Generator:
                     ram = get_randint(1, ram)
                     self.build_tree(defeater[0], defeater[1], height - 1, ram)
 
-
     def build_kb_base(self) -> None:
         """
         Build the KB Base (facts and presumptions only)
@@ -544,9 +501,9 @@ class Generator:
         self.levels[0] = {'drules': [], 'srules': []}
         self.LITERALS[0] = []
         for i in range(self.params["KBBASE_SIZE"]):
-            random_FP = get_random()
+            random_fp = get_random()
             literal = self.get_new_literal()
-            if random_FP < self.params["FACT_PROB"]:
+            if random_fp < self.params["FACT_PROB"]:
                 # New Fact
                 self.levels[0]['srules'].append((literal, ('true',)))
                 self.LITERALS[0].append(literal)
@@ -554,7 +511,6 @@ class Generator:
                 # New Presumption
                 self.levels[0]['drules'].append((literal, ('true',)))
                 self.LITERALS[0].append(literal)
-
 
     def build_kb(self, level: int) -> None:
         """
@@ -568,16 +524,16 @@ class Generator:
             self.build_kb(level - 1)
             self.build_arguments(level)
 
-
     def to_delp_format(self, result_path: str, id_program: int) -> None:
         """
         Save the delp program
         Args:
             result_path: The path for save the program
+            id_program: The id of the program
         """ 
         program = []
         delp_json = []
-        to_string = 'use_criterion(' + self.params["PREF_CRITERION"] +').'
+        to_string = 'use_criterion(' + self.params["PREF_CRITERION"] + ').'
         program.append('')
         for key, value in self.levels.items():
             kb_level = str(key)
@@ -604,7 +560,6 @@ class Generator:
                     'delp': delp_json,
                     'literals': filtered_literals
                     })
-
 
     def generate(self, result_path: str, hyperparams = 'undefined') -> None:
         """
