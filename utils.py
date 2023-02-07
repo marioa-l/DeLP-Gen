@@ -20,6 +20,14 @@ def my_round(number: np.ndarray) -> float:
 
 
 def string_to_int_float(value: str):
+    """
+    Convert a string into a float or int
+    Args:
+        value: a number in string
+
+    Returns:
+        The float or int representation of a number
+    """
     if value.isdigit():
         number = int(value)
     else:
@@ -130,7 +138,7 @@ def get_data_from_file(path_file: str) -> json:
 def write_metrics(result_path: str, result_path_file: str):
     """
     To compute the average of all metrics and save in a
-    simple txt file (to use in excel)
+    simple txt file
     Args:
         -result_path: The path to save the metrics
         -result_path_files: The path of the file with all results
@@ -140,7 +148,7 @@ def write_metrics(result_path: str, result_path_file: str):
     def_rules = sum(data['def_rules']) / len(data['def_rules'])
     arg_lines = sum(data['arg_lines']) / len(data['arg_lines'])
     height_lines = sum(data['height_lines']) / len(data['height_lines'])
-    # Argument | MDDL | H | T
+    # Argument | ADDL | H | T
     to_write = ('\n'
                 + to_string_decimal_format(arguments)
                 + ' ' + to_string_decimal_format(def_rules)
