@@ -44,13 +44,13 @@ metrics = ["base",
            "times"]
 
 std_metrics = ["std_base",
-            "std_rules",
-            "std_args",
-            "std_addl",
-            "std_t",
-            "std_b",
-            "std_h",
-            "std_times"]
+               "std_rules",
+               "std_args",
+               "std_addl",
+               "std_t",
+               "std_b",
+               "std_h",
+               "std_times"]
 
 """
 ### DPG Parameters ###
@@ -133,9 +133,6 @@ defaults_values = [
     params_default_deft,
     params_default_height
 ]
-
-# Utils
-utils = Utils()
 
 
 def generate_programs(dp: str, p_values: list) -> None:
@@ -299,7 +296,8 @@ def print_matrix_plot(labels, matrix, filepath):
 
     for i in range(len(labels)):
         for j in range(len(labels)):
-            text = axes_cor.text(j, i, nan_to_cero(matrix[i, j]), ha="center", va="center", color="black", size=12, bbox={'facecolor': 'white'})
+            text = axes_cor.text(j, i, nan_to_cero(matrix[i, j]), ha="center", va="center", color="black", size=12,
+                                 bbox={'facecolor': 'white'})
 
     plt.savefig(filepath, dpi=300, bbox_inches='tight')
     plt.close()
@@ -358,7 +356,7 @@ def analyze_corr(dp: str) -> None:
         p_values[parameter] = p_value_param.iloc[1:]
         print("...complete")
     print("\nAll Complete")
-    generate_correlations_matrix(dp, corr_params.loc[:,params], p_values.loc[:,params])
+    generate_correlations_matrix(dp, corr_params.loc[:, params], p_values.loc[:, params])
 
 
 """

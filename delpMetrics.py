@@ -1,3 +1,4 @@
+import csv
 import sys
 import time
 from subprocess import STDOUT, check_output
@@ -99,7 +100,7 @@ class ComputeMetrics:
             print("Exception: ", e)
             return json.loads('{"status":"","dGraph":""}')
 
-    def query_delp_solver(self) -> json:
+    def query_delp_solver(self, perc: float) -> json:
         """
         Call to delp solver to get all answers for the delp program
         in self.path_delp
@@ -206,6 +207,7 @@ class ComputeMetrics:
         if defs:
             write_result(self.path_file_results + id_p + 'OUTPUT.json', args_defs)
         return {
+            'n_programs': id_p,
             'n_arguments': int(n_arguments),
             'n_defeaters': int(n_defeaters),
             'n_trees': tree_numbers,
@@ -228,6 +230,7 @@ class ComputeMetrics:
             return result
         else:
             return {
+                'n_programs':'0',
                 'n_arguments': 0,
                 'n_defeaters': 0,
                 'n_trees': 0,
@@ -238,7 +241,7 @@ class ComputeMetrics:
 
     def compute_one(self, defs) -> None:
         self.aux_height = []
-
+        n_programs = []
         arguments = []
         defeaters = []
         n_trees = []
@@ -246,6 +249,7 @@ class ComputeMetrics:
         arg_lines = []
         height_lines = []
         data = self.compute_metrics(defs, '0', self.query_delp_solver, '0')
+        n_programs.append(data['n_programs'])
         arguments.append(data['n_arguments'])
         defeaters.append(data['n_defeaters'])
         n_trees.append(data['n_trees'])
@@ -253,14 +257,13 @@ class ComputeMetrics:
         arg_lines.append(data['avg_arg_lines'])
         height_lines.append(data['avg_height_lines'])
 
-        self.compute_save_metrics(arguments, def_rules, n_trees, arg_lines, height_lines, self.rules,
+        self.compute_save_metrics(n_programs, arguments, def_rules, n_trees, arg_lines, height_lines, self.rules,
                                   self.facts_presumptions)
 
-    def compute_save_metrics(self, arguments: list, def_rules: list, n_trees: list, arg_lines: list, height_lines: list,
+    def compute_save_metrics(self, n_programs:list, arguments: list, def_rules: list, n_trees: list, arg_lines: list, height_lines: list,
                              rules: list, facts_presumptions: list) -> None:
         min_time = min(self.times)
         max_time = max(self.times)
-
         results = {
             'args':
                 {
@@ -302,8 +305,24 @@ class ComputeMetrics:
                 'std': my_round(np.std(facts_presumptions))
                     }
         }
-
         write_result(self.build_path_result(), results)
+        # To write the final csv with the results
+        csv_path = self.path_file_results + 'results.csv'
+        with open(csv_path, 'w') as file:
+            writer = csv.writer(file)
+            writer.writerow(['program', 'args', 'addl', 't', 'b', 'h', 'rules', 'base', 'times'])
+            for program_result in range(len(arguments)):
+                writer.writerow([
+                    n_programs[program_result],
+                    arguments[program_result],
+                    def_rules[program_result],
+                    n_trees[program_result],
+                    arg_lines[program_result],
+                    height_lines[program_result],
+                    rules[program_result],
+                    facts_presumptions[program_result],
+                    my_round(self.times[program_result])])
+            file.close()
 
     def compute_dataset(self, dataset_length, defs, approx_metrics, perc):
         """
@@ -322,6 +341,7 @@ class ComputeMetrics:
             method_compute_metrics = self.query_delp_solver_approximation
         else:
             method_compute_metrics = self.query_delp_solver
+        n_programs = []
         arguments = []
         defeaters = []
         n_trees = []
@@ -333,11 +353,12 @@ class ComputeMetrics:
             file_path = self.path_dataset + str(count) + 'delp' + '.delp'
             self.path_delp = file_path
             data = self.compute_metrics(defs, str(count), method_compute_metrics, perc)
+            n_programs.append(data['n_programs'])
             arguments.append(data['n_arguments'])
             defeaters.append(data['n_defeaters'])
             n_trees.append(data['n_trees'])
             def_rules.append(data['avg_def_rules'])
             arg_lines.append(data['avg_arg_lines'])
             height_lines.append(data['avg_height_lines'])
-        self.compute_save_metrics(arguments, def_rules, n_trees, arg_lines, height_lines, self.rules,
+        self.compute_save_metrics(n_programs, arguments, def_rules, n_trees, arg_lines, height_lines, self.rules,
                                   self.facts_presumptions)
