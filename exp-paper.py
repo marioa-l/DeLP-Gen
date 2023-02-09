@@ -216,12 +216,13 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str) -> None:
     Given the directory of a parameter, retrieve the metrics for each variation 
     to create a csv and then generate the correlation matrices
     Args:
-        parameter_directory: Directory of a parameter
+        parameter_directory: The directory of the parameter to analyze its metrics.
         parameter: Parameter to analyze
     """
     variations = os.walk(parameter_directory)
     variations = sorted(next(variations)[1], key=string_to_int_float)
     csv_fp = dp + parameter + 'metrics_csv.csv'
+    csv_files = []
     with open(csv_fp, 'w') as f:
         writer = csv.writer(f)
         writer.writerow(params + metrics + std_metrics)
@@ -235,8 +236,17 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str) -> None:
             std_value_metrics = [load_metrics[m]['std'] for m in metrics if m != 'times']
             std_value_metrics.append(load_metrics['times']['std'])
             writer.writerow(value_params + value_metrics + std_value_metrics)
+            # To create the global csv
+            n_programs = load_params['N_PROGRAMS']
+            parameters_data = [value_params] * n_programs
+            parameters_df = pd.DataFrame(parameters_data, columns=params)
+            results_csv = pd.read_csv(path + 'results.csv')
+            csv_files.append(parameters_df.join(results_csv))
         f.close()
-
+    csv_parameter = pd.concat(csv_files, ignore_index=True)
+    aux_column = csv_parameter.pop('program')
+    csv_parameter.insert(0, 'program', aux_column)
+    csv_parameter.to_csv(dp + parameter + 'total_results.csv')
     # To draw and save correlation matrix
     data_csv = pd.read_csv(dp + parameter + 'metrics_csv.csv')
     p_csv = data_csv[[parameter] + metrics]
