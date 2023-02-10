@@ -221,7 +221,7 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str) -> None:
     """
     variations = os.walk(parameter_directory)
     variations = sorted(next(variations)[1], key=string_to_int_float)
-    csv_fp = dp + parameter + 'metrics_csv.csv'
+    csv_fp = dp + parameter + 'per_variations_metrics.csv'
     csv_files = []
     with open(csv_fp, 'w') as f:
         writer = csv.writer(f)
@@ -240,24 +240,28 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str) -> None:
             n_programs = load_params['N_PROGRAMS']
             parameters_data = [value_params] * n_programs
             parameters_df = pd.DataFrame(parameters_data, columns=params)
-            results_csv = pd.read_csv(path + 'results.csv')
+            results_csv = pd.read_csv(path + 'variation_metrics.csv')
             csv_files.append(parameters_df.join(results_csv))
         f.close()
     csv_parameter = pd.concat(csv_files, ignore_index=True)
     aux_column = csv_parameter.pop('program')
     csv_parameter.insert(0, 'program', aux_column)
-    csv_parameter.to_csv(dp + parameter + 'total_results.csv')
+    csv_parameter.to_csv(dp + parameter + 'total_metrics.csv')
+    
     # To draw and save correlation matrix
-    data_csv = pd.read_csv(dp + parameter + 'metrics_csv.csv')
+    
+    #data_csv = pd.read_csv(dp + parameter + 'metrics_csv.csv')
+    data_csv = pd.read_csv(dp + parameter + 'total_metrics.csv')
     p_csv = data_csv[[parameter] + metrics]
     labels = [parameter] + metrics
 
     # Pearson Correlation
     matrix_pearson = round(p_csv.corr(method='pearson'), 2)
-    print_matrix_plot(labels, matrix_pearson, (dp + parameter + "plot_pearson_" + parameter + ".png"))
+    #print_matrix_plot(labels, matrix_pearson, (dp + parameter + "plot_pearson_" + parameter + ".png"))
     corr_param = matrix_pearson[parameter]
     p_values = generate_pvalues_matrix(p_csv)
     p_value_param = p_values[parameter]
+    
     # Kendall Correlation
     # matrix_kendall = round(p_csv.corr(method='kendall'), 2)
     # print_matrix_plot(labels, matrix_kendall, (dp + parameter + "plot_kendall_" + parameter + ".png"))
@@ -279,9 +283,9 @@ def generate_pvalues_matrix(df):
         for c in df.columns:
             tmp = df[df[r].notnull() & df[c].notnull()]
             corr_value = round(pearsonr(tmp[r], tmp[c])[0], 2)
-            p_value = round(pearsonr(tmp[r], tmp[c])[1], 4)
-            values[r][c] = ''.join(['*' for t in [.05, .01, .001] if p_value
-                                    <= t])
+            p_value = round(pearsonr(tmp[r], tmp[c])[1], 3)
+            values[r][c] = [''.join(['*' for t in [.05, .01, .001] if p_value
+                                    <= t]),p_value]
     return values
 
 
@@ -318,7 +322,7 @@ def generate_correlations_matrix(dp, correlations, pvalues):
     metrics = correlations.index
     fig_cor, axes_cor = plt.subplots(1, 1)
     fig_cor.set_size_inches(12, 12)
-    img = axes_cor.imshow(correlations, cmap=plt.cm.get_cmap('RdYlGn', 10),
+    img = axes_cor.imshow(correlations, cmap=plt.cm.get_cmap('RdYlGn', 20),
                           vmin=-1, vmax=1)
     plt.title("Correlations", size=20, fontweight='bold')
     plt.xlabel("Parameters", size=18)
@@ -326,7 +330,7 @@ def generate_correlations_matrix(dp, correlations, pvalues):
     ax = plt.gca()
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.5)
-    plt.colorbar(img, cax=cax)
+    plt.colorbar(img, cax=cax, ticks=np.arange(-1,1.1,.1))
     axes_cor.set_xticks(np.arange(0, correlations.shape[1],
                                   correlations.shape[1] * 1.0 / len(params)))
     axes_cor.set_yticks(np.arange(0, correlations.shape[0],
@@ -336,8 +340,10 @@ def generate_correlations_matrix(dp, correlations, pvalues):
     matrix = correlations.to_numpy()
     for i in range(len(metrics)):
         for j in range(len(params)):
-            text = axes_cor.text(j, i, str(nan_to_cero(matrix[i, j])) + pvalues.iloc[i][j], ha="center", va="center",
-                                 color="black", size=12, bbox={'facecolor': 'white'})
+            text = axes_cor.text(j, i, str(nan_to_cero(matrix[i, j])) +
+                    pvalues.iloc[i][j][0] + "\n[" + str(pvalues.iloc[i][j][1]) +
+                    ']', ha="center", va="center",
+                                 color="black", size=10, bbox={'facecolor': 'white'})
 
     plt.savefig(dp + 'correlations.png', dpi=300, bbox_inches='tight')
     plt.close()

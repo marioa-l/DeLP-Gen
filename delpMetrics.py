@@ -307,7 +307,7 @@ class ComputeMetrics:
         }
         write_result(self.build_path_result(), results)
         # To write the final csv with the results
-        csv_path = self.path_file_results + 'results.csv'
+        csv_path = self.path_file_results + 'variation_metrics.csv'
         with open(csv_path, 'w') as file:
             writer = csv.writer(file)
             writer.writerow(['program', 'args', 'addl', 't', 'b', 'h', 'rules', 'base', 'times'])
