@@ -103,7 +103,7 @@ def to_string_decimal_format(number: float) -> str:
     return str(float('{0:.2f}'.format(number))).replace('.', ',')
 
 
-def write_result(path_file: str, result: json) -> None:
+def write_result(path_file: str, result) -> None:
     """
     To write the results in a json file
     Args:
@@ -114,7 +114,7 @@ def write_result(path_file: str, result: json) -> None:
         json.dump(result, output, indent=4)
 
 
-def get_data_from_file(path_file: str) -> json:
+def get_data_from_file(path_file: str):
     """
     To read a json file
     Args:

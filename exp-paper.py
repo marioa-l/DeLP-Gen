@@ -211,7 +211,7 @@ def compute_metrics(dp: str) -> None:
     print("All metrics were computed")
 
 
-def analyze_metrics(dp: str, parameter_directory: str, parameter: str) -> None:
+def analyze_metrics(dp: str, parameter_directory: str, parameter: str):
     """
     Given the directory of a parameter, retrieve the metrics for each variation 
     to create a csv and then generate the correlation matrices
@@ -313,7 +313,7 @@ def print_matrix_plot(labels, matrix, filepath):
 
     for i in range(len(labels)):
         for j in range(len(labels)):
-            text = axes_cor.text(j, i, nan_to_cero(matrix[i, j]), ha="center", va="center", color="black", size=12,
+            text = axes_cor.text(j, i, str(nan_to_cero(matrix[i, j])), ha="center", va="center", color="black", size=12,
                                  bbox={'facecolor': 'white'})
 
     plt.savefig(filepath, dpi=300, bbox_inches='tight')
@@ -395,7 +395,7 @@ def remove_old_files(dp):
         try:
             os.remove(filePath)
         except e:
-            print(bcolors.WARNING + "Error while deleting file: ", filePath)
+            print(Bcolors.WARNING + "Error while deleting file: ", filePath)
 
 
 def analyze_corr(dp: str) -> None:

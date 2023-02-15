@@ -176,7 +176,7 @@ class Generator:
         self.levels = {}
         """"""
 
-    def define_hyperparams(self, hyperparams: dict) -> None:
+    def define_hyperparams(self, hyperparams) -> None:
         self.params = copy.copy(hyperparams)
 
     def clear_datastructures(self) -> None:
@@ -250,7 +250,7 @@ class Generator:
         """
         return self.levels[level][tipo][pos][0]
 
-    def get_body_literals(self, body: list) -> list:
+    def get_body_literals(self, body) -> list:
         """
         Get all literals in a body
         Args:
@@ -350,7 +350,7 @@ class Generator:
                 rule = ('srules', 0, len(self.levels[0]['srules']) - 1)
         return rule
 
-    def build_body(self, level: int, conclusion: str) -> list:
+    def build_body(self, level: int, conclusion: str):
         """
         Build an argument body (a list of tuples) whit at least one rule from
         a particular KB level.
