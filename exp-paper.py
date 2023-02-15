@@ -254,6 +254,9 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str) -> None:
     data_csv = pd.read_csv(dp + parameter + 'total_metrics.csv')
     p_csv = data_csv[[parameter] + metrics]
     labels = [parameter] + metrics
+    
+    # To create the dataframe of metrics and running time
+    metrics_csv = data_csv[metrics]
 
     # Pearson Correlation
     matrix_pearson = round(p_csv.corr(method='pearson'), 2)
@@ -273,7 +276,7 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str) -> None:
     # Cov Correlation
     # matrix_cov = round(p_csv.cov(), 2)
     # print_matrix_plot(labels, matrix_cov, (dp + parameter + "plot_cov_" + parameter + ".png"))
-    return corr_param, p_value_param
+    return corr_param, p_value_param, metrics_csv
 
 
 def generate_pvalues_matrix(df):
@@ -349,6 +352,42 @@ def generate_correlations_matrix(dp, correlations, pvalues):
     plt.close()
 
 
+def generate_correlations_metrics_times(dp, metrics_df):
+    metrics_df.to_csv(dp + 'metrics_times.csv')
+    correlations = round(metrics_df.corr(method='pearson'),2).loc[['times'],['base','rules','args','addl','t','b','h']]
+    pvalues = generate_pvalues_matrix(metrics_df).loc[['times'],['base','rules','args','addl','t','b','h']]
+    params = correlations.columns
+    metrics = correlations.index
+    fig_cor, axes_cor = plt.subplots(1, 1)
+    fig_cor.set_size_inches(12, 12)
+    img = axes_cor.imshow(correlations, cmap=plt.cm.get_cmap('RdYlGn', 20),
+                          vmin=-1, vmax=1)
+    plt.title("Metrics - Running Time Correlation", size=20, fontweight='bold')
+    plt.xlabel("Metrics", size=18)
+    plt.ylabel("Times", size=18)
+    ax = plt.gca()
+    divider = make_axes_locatable(ax)
+    cax = divider.new_vertical(size="5%", pad=0.9, pack_start=True)
+    fig_cor.add_axes(cax)
+    plt.colorbar(img, cax=cax, ticks=np.arange(-1,1.1,.1),
+            orientation="horizontal")
+    axes_cor.set_xticks(np.arange(0, correlations.shape[1],
+                                  correlations.shape[1] * 1.0 / len(params)))
+    axes_cor.set_yticks(np.arange(0, correlations.shape[0],
+                                  correlations.shape[0] * 1.0 / len(metrics)))
+    axes_cor.set_xticklabels(params, ha="right", fontweight='bold')
+    axes_cor.set_yticklabels(metrics, fontweight='bold')
+    matrix = correlations.to_numpy()
+    for i in range(len(metrics)):
+        for j in range(len(params)):
+            text = axes_cor.text(j, i, str(nan_to_cero(matrix[i, j])) +
+                    pvalues.iloc[i][j][0] + "\n[" + str(pvalues.iloc[i][j][1]) +
+                    ']', ha="center", va="center",
+                                 color="black", size=10, bbox={'facecolor': 'white'})
+
+    plt.savefig(dp + 'metrics_times_correlations.png', dpi=300, bbox_inches='tight')
+    plt.close()
+
 def remove_old_files(dp):
     fileList = glob.glob(dp + "*.csv")
     files = fileList + glob.glob(dp + "*.png")
@@ -365,14 +404,18 @@ def analyze_corr(dp: str) -> None:
     parameters = os.listdir(dp)
     corr_params = pd.DataFrame()
     p_values = pd.DataFrame()
+    metrics = []
     for parameter in parameters:
         print("Starting with parameter " + parameter)
-        corr_param, p_value_param = analyze_metrics(dp, dp + parameter + '/', parameter)
+        corr_param, p_value_param, metrics_csv = analyze_metrics(dp, dp + parameter + '/', parameter)
         corr_params[parameter] = corr_param.iloc[1:]
         p_values[parameter] = p_value_param.iloc[1:]
+        metrics.append(metrics_csv)
         print("...complete")
     print("\nAll Complete")
     generate_correlations_matrix(dp, corr_params.loc[:, params], p_values.loc[:, params])
+    metrics_csv = pd.concat(metrics)
+    generate_correlations_metrics_times(dp, metrics_csv)
 
 
 """
