@@ -52,6 +52,27 @@ std_metrics = ["std_base",
                "std_h",
                "std_times"]
 
+metrics_rename = [
+        "BASE",
+        "RULE",
+        "ARG",
+        "DDL",
+        "DT",
+        "BFD",
+        "HDT",
+        "TIME"
+        ]
+
+std_metrics_rename = [
+        "std_BASE",
+        "std_RULE",
+        "std_ARG",
+        "std_DDL",
+        "std_DT",
+        "std_BFD",
+        "std_HDT",
+        "std_TIME"
+        ]
 """
 ### DPG Parameters ###
 - ext_seed: Minimum number of facts and presumptions.
@@ -78,6 +99,31 @@ params = [
     "TREE_HEIGHT"
 ]
 
+params_rename=[
+        "BE",
+        "FACTS",
+        "NEG",
+        "DRUL",
+        "HEADS",
+        "BODY",
+        "ARGLVL",
+        "LVL",
+        "DEFT",
+        "HEIGHT"
+        ]
+
+params_name = {
+        "KBBASE_SIZE": "BE",
+        "FACT_PROB": "FACTS",
+        "NEG_PROB": "NEG",
+        "DRULE_PROB": "DRUL",
+        "MAX_RULESPERHEAD": "HEADS",
+        "MAX_BODYSIZE": "BODY",
+        "MIN_ARGSLEVEL": "ARGLVL",
+        "LEVELS": "LVL",
+        "RAMIFICATION": "DEFT",
+        "TREE_HEIGHT": "HEIGHT"
+        }
 # The minimum value for each parameter
 params_min = [0, 0.1, 0.1, 0.1, 1, 1, 1, 1, 1, 1]
 
@@ -221,11 +267,11 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str):
     """
     variations = os.walk(parameter_directory)
     variations = sorted(next(variations)[1], key=string_to_int_float)
-    csv_fp = dp + parameter + 'per_variations_metrics.csv'
+    csv_fp = dp + params_name[parameter] + 'per_variations_metrics.csv'
     csv_files = []
     with open(csv_fp, 'w') as f:
         writer = csv.writer(f)
-        writer.writerow(params + metrics + std_metrics)
+        writer.writerow(params_rename + metrics_rename + std_metrics_rename)
         for variation in variations:
             path = parameter_directory + variation + '/'
             load_params = json.load(open(path + 'parameters.json'))
@@ -246,12 +292,12 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str):
     csv_parameter = pd.concat(csv_files, ignore_index=True)
     aux_column = csv_parameter.pop('program')
     csv_parameter.insert(0, 'program', aux_column)
-    csv_parameter.to_csv(dp + parameter + 'total_metrics.csv')
+    csv_parameter.to_csv(dp + params_name[parameter] + 'total_metrics.csv')
     
     # To draw and save correlation matrix
     
     #data_csv = pd.read_csv(dp + parameter + 'metrics_csv.csv')
-    data_csv = pd.read_csv(dp + parameter + 'total_metrics.csv')
+    data_csv = pd.read_csv(dp + params_name[parameter] + 'total_metrics.csv')
     p_csv = data_csv[[parameter] + metrics]
     labels = [parameter] + metrics
     # To create the dataframe of metrics and running time
@@ -319,7 +365,28 @@ def print_matrix_plot(labels, matrix, filepath):
     plt.close()
 
 
-def generate_correlations_matrix(dp, correlations, pvalues):
+def generate_correlations_matrix(dp, corr, pvalues):
+    correlations = corr.rename(columns={
+        "KBBASE_SIZE":'BE',
+        "FACT_PROB":'FACTS',
+        "NEG_PROB":'NEG',
+        "DRULE_PROB":'DRUL',
+        "MAX_RULESPERHEAD":'HEADS',
+        "MAX_BODYSIZE":'BODY',
+        "MIN_ARGSLEVEL":'ARGLVL',
+        "LEVELS":'LVL',
+        "RAMIFICATION":'DEFT',
+        "TREE_HEIGHT":'HEIGHT'
+        }, index={
+            "base":'BASE',
+            "rules":'RULE',
+            "args":'ARG',
+            "addl":'DDL',
+            "t":'DT',
+            "b":'BFD',
+            "h":'HDT',
+            "times":'TIME'
+        })
     params = correlations.columns
     metrics = correlations.index
     fig_cor, axes_cor = plt.subplots(1, 1)
