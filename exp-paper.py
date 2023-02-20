@@ -240,7 +240,7 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str):
             n_programs = load_params['N_PROGRAMS']
             parameters_data = [value_params] * n_programs
             parameters_df = pd.DataFrame(parameters_data, columns=params)
-            results_csv = pd.read_csv(path + 'variation_metrics.csv')
+            results_csv = pd.read_csv(path + 'results.csv')
             csv_files.append(parameters_df.join(results_csv))
         f.close()
     csv_parameter = pd.concat(csv_files, ignore_index=True)
@@ -254,7 +254,6 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str):
     data_csv = pd.read_csv(dp + parameter + 'total_metrics.csv')
     p_csv = data_csv[[parameter] + metrics]
     labels = [parameter] + metrics
-    
     # To create the dataframe of metrics and running time
     metrics_csv = data_csv[metrics]
 
@@ -353,11 +352,21 @@ def generate_correlations_matrix(dp, correlations, pvalues):
 
 
 def generate_correlations_metrics_times(dp, metrics_df):
-    metrics_df.to_csv(dp + 'metrics_times.csv')
-    correlations = round(metrics_df.corr(method='pearson'),2).loc[['times'],['base','rules','args','addl','t','b','h']]
-    pvalues = generate_pvalues_matrix(metrics_df).loc[['times'],['base','rules','args','addl','t','b','h']]
-    params = correlations.columns
-    metrics = correlations.index
+    # To save the file with all metrics values
+    metrics_csv = pd.concat(metrics_df)
+    metrics_csv.to_csv(dp + 'metrics_times.csv')
+    
+    metrics_mean_dict = {metric_name:[] for metric_name in metrics}
+    for metric_df in metrics_df:
+        metrics_means = metric_df.describe().loc['mean']
+        for name in metrics:
+            metrics_mean_dict[name].append(metrics_means[name])
+    metrics_means = pd.DataFrame.from_dict(metrics_mean_dict)
+
+    correlations = round(metrics_means.corr(method='pearson'),2).loc[['times'],['base','rules','args','addl','t','b','h']]
+    pvalues = generate_pvalues_matrix(metrics_means).loc[['times'],['base','rules','args','addl','t','b','h']]
+    ccolumns = correlations.columns
+    cindex = correlations.index
     fig_cor, axes_cor = plt.subplots(1, 1)
     fig_cor.set_size_inches(12, 12)
     img = axes_cor.imshow(correlations, cmap=plt.cm.get_cmap('RdYlGn', 20),
@@ -372,14 +381,14 @@ def generate_correlations_metrics_times(dp, metrics_df):
     plt.colorbar(img, cax=cax, ticks=np.arange(-1,1.1,.1),
             orientation="horizontal")
     axes_cor.set_xticks(np.arange(0, correlations.shape[1],
-                                  correlations.shape[1] * 1.0 / len(params)))
+                                  correlations.shape[1] * 1.0 / len(ccolumns)))
     axes_cor.set_yticks(np.arange(0, correlations.shape[0],
-                                  correlations.shape[0] * 1.0 / len(metrics)))
-    axes_cor.set_xticklabels(params, ha="right", fontweight='bold')
-    axes_cor.set_yticklabels(metrics, fontweight='bold')
+                                  correlations.shape[0] * 1.0 / len(cindex)))
+    axes_cor.set_xticklabels(ccolumns, ha="right", fontweight='bold')
+    axes_cor.set_yticklabels(cindex, fontweight='bold')
     matrix = correlations.to_numpy()
-    for i in range(len(metrics)):
-        for j in range(len(params)):
+    for i in range(len(cindex)):
+        for j in range(len(ccolumns)):
             text = axes_cor.text(j, i, str(nan_to_cero(matrix[i, j])) +
                     pvalues.iloc[i][j][0] + "\n[" + str(pvalues.iloc[i][j][1]) +
                     ']', ha="center", va="center",
@@ -387,6 +396,7 @@ def generate_correlations_metrics_times(dp, metrics_df):
 
     plt.savefig(dp + 'metrics_times_correlations.png', dpi=300, bbox_inches='tight')
     plt.close()
+
 
 def remove_old_files(dp):
     fileList = glob.glob(dp + "*.csv")
@@ -414,8 +424,8 @@ def analyze_corr(dp: str) -> None:
         print("...complete")
     print("\nAll Complete")
     generate_correlations_matrix(dp, corr_params.loc[:, params], p_values.loc[:, params])
-    metrics_csv = pd.concat(metrics)
-    generate_correlations_metrics_times(dp, metrics_csv)
+    #metrics_csv = pd.concat(metrics)
+    generate_correlations_metrics_times(dp, metrics)
 
 
 """
