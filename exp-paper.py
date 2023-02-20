@@ -326,7 +326,7 @@ def generate_correlations_matrix(dp, correlations, pvalues):
     fig_cor.set_size_inches(12, 12)
     img = axes_cor.imshow(correlations, cmap=plt.cm.get_cmap('RdYlGn', 20),
                           vmin=-1, vmax=1)
-    plt.title("Correlations", size=20, fontweight='bold')
+    plt.title("Correlations", size=20, fontweight='bold', pad=35)
     plt.xlabel("Parameters", size=18)
     plt.ylabel("Metrics", size=18)
     ax = plt.gca()
@@ -362,21 +362,30 @@ def generate_correlations_metrics_times(dp, metrics_df):
         for name in metrics:
             metrics_mean_dict[name].append(metrics_means[name])
     metrics_means = pd.DataFrame.from_dict(metrics_mean_dict)
-
-    correlations = round(metrics_means.corr(method='pearson'),2).loc[['times'],['base','rules','args','addl','t','b','h']]
-    pvalues = generate_pvalues_matrix(metrics_means).loc[['times'],['base','rules','args','addl','t','b','h']]
+    renamed_metrics_means = metrics_means.rename(columns = {
+                                                        'base':'BASE',
+                                                        'rules': 'RULE',
+                                                        'args':'ARG',
+                                                        'addl':'DDL',
+                                                        't':'DT',
+                                                        'b':'BFD',
+                                                        'h':'HDT',
+                                                        'times':'TIME'})
+    correlations = round(renamed_metrics_means.corr(method='pearson'),2).loc[['TIME'],['BASE','RULE','ARG','DDL','DT','BFD','HDT']]
+    pvalues = generate_pvalues_matrix(renamed_metrics_means).loc[['TIME'],['BASE','RULE','ARG','DDL','DT','BFD','HDT']]
     ccolumns = correlations.columns
     cindex = correlations.index
     fig_cor, axes_cor = plt.subplots(1, 1)
     fig_cor.set_size_inches(12, 12)
     img = axes_cor.imshow(correlations, cmap=plt.cm.get_cmap('RdYlGn', 20),
                           vmin=-1, vmax=1)
-    plt.title("Metrics - Running Time Correlation", size=20, fontweight='bold')
-    plt.xlabel("Metrics", size=18)
-    plt.ylabel("Times", size=18)
+    plt.title("Metrics - Running Time Correlation", size=20, fontweight='bold',
+            pad=35)
+    plt.xlabel("Metrics", size=18, labelpad=15)
+    plt.ylabel("Time", size=18, labelpad=15)
     ax = plt.gca()
     divider = make_axes_locatable(ax)
-    cax = divider.new_vertical(size="5%", pad=0.9, pack_start=True)
+    cax = divider.new_vertical(size="5%", pad=1.2, pack_start=True)
     fig_cor.add_axes(cax)
     plt.colorbar(img, cax=cax, ticks=np.arange(-1,1.1,.1),
             orientation="horizontal")
