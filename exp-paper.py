@@ -73,6 +73,18 @@ std_metrics_rename = [
         "std_HDT",
         "std_TIME"
         ]
+
+metrics_name = {
+        "args": "ARG",
+        "base": "BASE",
+        "rules": "RULE",
+        "addl": "DDL",
+        "t": "DT",
+        "b": "BFD",
+        "h": "HDT",
+        "times": "TIME"
+        }
+
 """
 ### DPG Parameters ###
 - ext_seed: Minimum number of facts and presumptions.
@@ -421,7 +433,8 @@ def generate_correlations_matrix(dp, corr, pvalues):
 def generate_correlations_metrics_times(dp, metrics_df):
     # To save the file with all metrics values
     metrics_csv = pd.concat(metrics_df)
-    metrics_csv.to_csv(dp + 'metrics_times.csv')
+    metrics_aux = metrics_csv.rename(columns=metrics_name)
+    metrics_aux.to_csv(dp + 'metrics_times.csv')
     
     metrics_mean_dict = {metric_name:[] for metric_name in metrics}
     for metric_df in metrics_df:
