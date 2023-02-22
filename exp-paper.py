@@ -316,7 +316,7 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str):
     metrics_csv = data_csv[metrics]
 
     # Pearson Correlation
-    matrix_pearson = round(p_csv.corr(method='pearson'), 2)
+    matrix_pearson = round(p_csv.corr(method='spearman'), 2)
     #print_matrix_plot(labels, matrix_pearson, (dp + parameter + "plot_pearson_" + parameter + ".png"))
     corr_param = matrix_pearson[parameter]
     p_values = generate_pvalues_matrix(p_csv)
@@ -435,24 +435,23 @@ def generate_correlations_metrics_times(dp, metrics_df):
     metrics_csv = pd.concat(metrics_df)
     metrics_aux = metrics_csv.rename(columns=metrics_name)
     metrics_aux.to_csv(dp + 'metrics_times.csv')
-    
-    metrics_mean_dict = {metric_name:[] for metric_name in metrics}
-    for metric_df in metrics_df:
-        metrics_means = metric_df.describe().loc['mean']
-        for name in metrics:
-            metrics_mean_dict[name].append(metrics_means[name])
-    metrics_means = pd.DataFrame.from_dict(metrics_mean_dict)
-    renamed_metrics_means = metrics_means.rename(columns = {
-                                                        'base':'BASE',
-                                                        'rules': 'RULE',
-                                                        'args':'ARG',
-                                                        'addl':'DDL',
-                                                        't':'DT',
-                                                        'b':'BFD',
-                                                        'h':'HDT',
-                                                        'times':'TIME'})
-    correlations = round(renamed_metrics_means.corr(method='pearson'),2).loc[['TIME'],['BASE','RULE','ARG','DDL','DT','BFD','HDT']]
-    pvalues = generate_pvalues_matrix(renamed_metrics_means).loc[['TIME'],['BASE','RULE','ARG','DDL','DT','BFD','HDT']]
+    #metrics_mean_dict = {metric_name:[] for metric_name in metrics}
+    #for metric_df in metrics_df:
+    #    metrics_means = metric_df.describe().loc['mean']
+    #    for name in metrics:
+    #        metrics_mean_dict[name].append(metrics_means[name])
+    #metrics_means = pd.DataFrame.from_dict(metrics_mean_dict)
+    #renamed_metrics_means = metrics_means.rename(columns = {
+    #                                                    'base':'BASE',
+    #                                                    'rules': 'RULE',
+    #                                                    'args':'ARG',
+    #                                                    'addl':'DDL',
+    #                                                    't':'DT',
+    #                                                    'b':'BFD',
+    #                                                    'h':'HDT',
+    #                                                    'times':'TIME'})
+    correlations = round(metrics_aux.corr(method='spearman'),2).loc[['TIME'],['BASE','RULE','ARG','DDL','DT','BFD','HDT']]
+    pvalues = generate_pvalues_matrix(metrics_aux).loc[['TIME'],['BASE','RULE','ARG','DDL','DT','BFD','HDT']]
     ccolumns = correlations.columns
     cindex = correlations.index
     fig_cor, axes_cor = plt.subplots(1, 1)
