@@ -310,8 +310,15 @@ def analyze_metrics(dp: str, parameter_directory: str, parameter: str):
     
     #data_csv = pd.read_csv(dp + parameter + 'metrics_csv.csv')
     data_csv = pd.read_csv(dp + params_name[parameter] + 'total_metrics.csv')
-    p_csv = data_csv[[parameter] + metrics]
-    labels = [parameter] + metrics
+    metrics_local = ["base",
+           "rules",
+           "args",
+           "addl",
+           "t",
+           "b",
+           "h"]
+    p_csv = data_csv[[parameter] + metrics_local]
+    labels = [parameter] + metrics_local
     # To create the dataframe of metrics and running time
     metrics_csv = data_csv[metrics]
 
@@ -421,10 +428,18 @@ def generate_correlations_matrix(dp, corr, pvalues):
     matrix = correlations.to_numpy()
     for i in range(len(metrics)):
         for j in range(len(params)):
-            text = axes_cor.text(j, i, str(nan_to_cero(matrix[i, j])) +
-                    pvalues.iloc[i][j][0] + "\n[" + str(pvalues.iloc[i][j][1]) +
-                    ']', ha="center", va="center",
-                                 color="black", size=10, bbox={'facecolor': 'white'})
+            if pvalues.iloc[i][j][1] <= .05:
+                text = axes_cor.text(j, i, str(nan_to_cero(matrix[i, j])) + '\n' +
+                        pvalues.iloc[i][j][0], ha="center", va="center",
+                        color='black', size=12, bbox={'facecolor':'white'})
+            else:
+                text = axes_cor.text(j, i, '0.00' + '\n' + '000', ha="center", va="center",
+                        color='#e2eaf5', size=16, bbox={'facecolor':'#e2eaf5',
+                            'alpha':.9})
+            #text = axes_cor.text(j, i, str(nan_to_cero(matrix[i, j])) +
+            #        pvalues.iloc[i][j][0] + "\n[" + str(pvalues.iloc[i][j][1]) +
+            #        ']', ha="center", va="center",
+            #                     color="black", size=10, bbox={'facecolor': 'white'})
 
     plt.savefig(dp + 'correlations.png', dpi=300, bbox_inches='tight')
     plt.close()
@@ -461,7 +476,7 @@ def generate_correlations_metrics_times(dp, metrics_df):
     plt.title("Metrics - Running Time Correlation", size=20, fontweight='bold',
             pad=35)
     plt.xlabel("Metrics", size=18, labelpad=15)
-    plt.ylabel("Time", size=18, labelpad=15)
+    #plt.ylabel("Time", size=18, labelpad=15)
     ax = plt.gca()
     divider = make_axes_locatable(ax)
     cax = divider.new_vertical(size="5%", pad=1.2, pack_start=True)
@@ -478,10 +493,13 @@ def generate_correlations_metrics_times(dp, metrics_df):
     for i in range(len(cindex)):
         for j in range(len(ccolumns)):
             text = axes_cor.text(j, i, str(nan_to_cero(matrix[i, j])) +
-                    pvalues.iloc[i][j][0] + "\n[" + str(pvalues.iloc[i][j][1]) +
-                    ']', ha="center", va="center",
-                                 color="black", size=10, bbox={'facecolor': 'white'})
-
+                    pvalues.iloc[i][j][0], ha="center", va="center",
+                    color="black", size=19, bbox={'facecolor': 'white'})
+            #text = axes_cor.text(j, i, str(nan_to_cero(matrix[i, j])) +
+            #        pvalues.iloc[i][j][0] + "\n[" + str(pvalues.iloc[i][j][1]) +
+            #        ']', ha="center", va="center",
+            #                     color="black", size=10, bbox={'facecolor': 'white'})
+    #axes_cor.text(6.6, 0.1, 'p-value < 0.05 = *\np-value < 0.01 = **\np-value < 0.001 = ***', bbox={'facecolor': 'white'})
     plt.savefig(dp + 'metrics_times_correlations.png', dpi=300, bbox_inches='tight')
     plt.close()
 
