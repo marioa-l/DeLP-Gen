@@ -75,13 +75,13 @@ std_metrics_rename = [
         ]
 
 metrics_name = {
-        "args": "ARG",
-        "base": "BASE",
-        "rules": "RULE",
-        "addl": "DDL",
-        "t": "DT",
-        "b": "BFD",
-        "h": "HDT",
+        "args": "NAR",
+        "base": "NBE",
+        "rules": "NRU",
+        "addl": "ALE",
+        "t": "NDT",
+        "b": "AWI",
+        "h": "AHE",
         "times": "TIME"
         }
 
@@ -385,10 +385,12 @@ def print_matrix_plot(labels, matrix, filepath):
 
 
 def generate_correlations_matrix(dp, corr, pvalues):
+    pvalues.drop(['NEG_PROB'], axis=1, inplace=True)
+    corr.drop(['NEG_PROB'], axis=1, inplace=True)
     correlations = corr.rename(columns={
         "KBBASE_SIZE":'BE',
         "FACT_PROB":'FACTS',
-        "NEG_PROB":'NEG',
+        #"NEG_PROB":'NEG',
         "DRULE_PROB":'DRUL',
         "MAX_RULESPERHEAD":'HEADS',
         "MAX_BODYSIZE":'BODY',
@@ -397,13 +399,13 @@ def generate_correlations_matrix(dp, corr, pvalues):
         "RAMIFICATION":'DEFT',
         "TREE_HEIGHT":'HEIGHT'
         }, index={
-            "base":'BASE',
-            "rules":'RULE',
-            "args":'ARG',
-            "addl":'DDL',
-            "t":'DT',
-            "b":'BFD',
-            "h":'HDT',
+            "base":'NBE',
+            "rules":'NRU',
+            "args":'NAR',
+            "addl":'ALE',
+            "t":'NDT',
+            "b":'AWI',
+            "h":'AHE',
             "times":'TIME'
         })
     params = correlations.columns
@@ -412,13 +414,20 @@ def generate_correlations_matrix(dp, corr, pvalues):
     fig_cor.set_size_inches(12, 12)
     img = axes_cor.imshow(correlations, cmap=plt.cm.get_cmap('RdYlGn', 20),
                           vmin=-1, vmax=1)
-    plt.title("Correlations", size=20, fontweight='bold', pad=35)
+    plt.title("Correlations between Parameters and Metrics", size=20, fontweight='bold', pad=35)
     plt.xlabel("Parameters", size=18)
     plt.ylabel("Metrics", size=18)
     ax = plt.gca()
     divider = make_axes_locatable(ax)
-    cax = divider.append_axes("right", size="5%", pad=0.5)
-    plt.colorbar(img, cax=cax, ticks=np.arange(-1,1.1,.1))
+    
+    cax = divider.new_vertical(size="5%", pad=1.2, pack_start=True)
+    fig_cor.add_axes(cax)
+    plt.colorbar(img, cax=cax, ticks=np.arange(-1,1.1,.1),
+            orientation="horizontal")
+    
+    #cax = divider.append_axes("right", size="5%", pad=0.5)
+    #plt.colorbar(img, cax=cax, ticks=np.arange(-1,1.1,.1))
+    
     axes_cor.set_xticks(np.arange(0, correlations.shape[1],
                                   correlations.shape[1] * 1.0 / len(params)))
     axes_cor.set_yticks(np.arange(0, correlations.shape[0],
@@ -465,15 +474,15 @@ def generate_correlations_metrics_times(dp, metrics_df):
     #                                                    'b':'BFD',
     #                                                    'h':'HDT',
     #                                                    'times':'TIME'})
-    correlations = round(metrics_aux.corr(method='spearman'),2).loc[['TIME'],['BASE','RULE','ARG','DDL','DT','BFD','HDT']]
-    pvalues = generate_pvalues_matrix(metrics_aux).loc[['TIME'],['BASE','RULE','ARG','DDL','DT','BFD','HDT']]
+    correlations = round(metrics_aux.corr(method='spearman'),2).loc[['TIME'],['NBE','NRU','NAR','ALE','NDT','AWI','AHE']]
+    pvalues = generate_pvalues_matrix(metrics_aux).loc[['TIME'],['NBE','NRU','NAR','ALE','NDT','AWI','AHE']]
     ccolumns = correlations.columns
     cindex = correlations.index
     fig_cor, axes_cor = plt.subplots(1, 1)
     fig_cor.set_size_inches(12, 12)
     img = axes_cor.imshow(correlations, cmap=plt.cm.get_cmap('RdYlGn', 20),
                           vmin=-1, vmax=1)
-    plt.title("Metrics - Running Time Correlation", size=20, fontweight='bold',
+    plt.title("Correlation between Metrics and Running Time", size=20, fontweight='bold',
             pad=35)
     plt.xlabel("Metrics", size=18, labelpad=15)
     #plt.ylabel("Time", size=18, labelpad=15)
