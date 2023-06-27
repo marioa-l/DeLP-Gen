@@ -561,7 +561,7 @@ class Generator:
                     'literals': filtered_literals
                     })
 
-    def generate(self, result_path: str, hyperparams = 'undefined') -> None:
+    def generate(self, result_path: str, idx: int, hyperparams = 'undefined') -> None:
         """
         Generate a delp program with hyperparams (if they are in <args>)
         Args:
@@ -576,4 +576,4 @@ class Generator:
             self.build_kb_base()
             self.build_kb(self.params["LEVELS"])
             self.build_dialectical_trees()
-            self.to_delp_format(result_path, id_program) 
+            self.to_delp_format(result_path, idx) 

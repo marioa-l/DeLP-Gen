@@ -28,6 +28,32 @@ class Test:
     def __init__(self):
         print("Starting...")
 
+    def evaluate(self, path_to_generate):
+        generator = Generator()
+        # Get all parameters value
+        #parameters = [[paraterms], [parameters]...]
+        test_parameters = np.array([[5,.5,.5,1,1,1,1,1,1],
+                                    [5,.5,.5,1,1,1,1,1,1]])
+        for idx, parameters in enumerate(test_parameters):
+            parameters = parameters.tolist()
+            local_params = {
+                "KBBASE_SIZE": int(parameters[0]),
+                "FACT_PROB": parameters[1],
+                "NEG_PROB": 0.5,
+                "DRULE_PROB": parameters[2],
+                "MAX_RULESPERHEAD": int(parameters[3]),
+                "MAX_BODYSIZE": int(parameters[4]),
+                "MIN_ARGSLEVEL": int(parameters[5]),
+                "LEVELS": int(parameters[6]),
+                "RAMIFICATION": int(parameters[7]),
+                "TREE_HEIGHT": int(parameters[8]),
+                "INNER_PROB": 0.0,
+                "N_PROGRAMS": 1,
+                "PREF_CRITERION": "more_specific"
+                }
+            generator.generate(path_to_generate, idx, local_params)
+        print("Complete")
+
     def test_generator(self, dataset_path):
         generator = Generator()
         params = get_data_from_file(dataset_path + 'parameters.json')
@@ -81,6 +107,9 @@ parser.add_argument('-defs',
                     action='store_true',
                     help='To print arguments-defeaters info'
                     )
+parser.add_argument('-eval',
+                    action='store_true',
+                    help='To evaluate set of parameters')
 #parser.add_argument('-defscript',
 #                    action='store_true',
 #                    help='To parse the info of the defeaters and arguments',
@@ -96,6 +125,9 @@ program_path = args.p
 if not os.path.isdir(input_path):
     print('The path specified does not exist')
     sys.exit()
+if args.eval:
+    # Generate a set of programa and check is time
+    test.evaluate(input_path)
 if args.gen:
     # Generate a dataset
     test.test_generator(input_path)
