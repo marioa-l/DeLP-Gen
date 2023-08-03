@@ -6,6 +6,7 @@ import os
 import sys
 import csv
 import glob
+from os import listdir
 
 
 def parser_defs(save_path, file_path):
@@ -32,8 +33,8 @@ class Test:
         generator = Generator()
         # Get all parameters value
         #parameters = [[paraterms], [parameters]...]
-        test_parameters = np.array([[5,.5,.5,1,1,1,1,1,1],
-                                    [5,.5,.5,1,1,1,1,1,1]])
+        filenames = listdir(path_to_generate)
+        test_parameters = np.genfromtxt(path_to_generate + '/' +filenames[0], delimiter=",")
         for idx, parameters in enumerate(test_parameters):
             parameters = parameters.tolist()
             local_params = {
