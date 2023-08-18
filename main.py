@@ -29,12 +29,12 @@ class Test:
     def __init__(self):
         print("Starting...")
 
-    def evaluate(self, path_to_generate):
+    def gen_by_csv(self, path_to_generate):
         generator = Generator()
         # Get all parameters value
-        #parameters = [[paraterms], [parameters]...]
+        # parameters = [[parameters], [parameters]...]
         filenames = listdir(path_to_generate)
-        test_parameters = np.genfromtxt(path_to_generate + '/' +filenames[0], delimiter=",")
+        test_parameters = np.genfromtxt(path_to_generate + '/' + filenames[0], delimiter=",")
         for idx, parameters in enumerate(test_parameters):
             parameters = parameters.tolist()
             local_params = {
@@ -52,13 +52,13 @@ class Test:
                 "N_PROGRAMS": 1,
                 "PREF_CRITERION": "more_specific"
                 }
-            generator.generate(path_to_generate, idx, local_params)
+            output = generator.generate(path_to_generate, 'write', local_params)
         print("Complete")
 
     def test_generator(self, dataset_path):
         generator = Generator()
         params = get_data_from_file(dataset_path + 'parameters.json')
-        generator.generate(dataset_path, params)
+        output = generator.generate(dataset_path, 'write', params)
         print("Complete")
 
     def test_metrics_one(self, dir_path: str, delp_name: str, defs:bool) -> None:
@@ -108,9 +108,9 @@ parser.add_argument('-defs',
                     action='store_true',
                     help='To print arguments-defeaters info'
                     )
-parser.add_argument('-eval',
+parser.add_argument('-gencsv',
                     action='store_true',
-                    help='To evaluate set of parameters')
+                    help='To evaluate set of parameters from csv')
 #parser.add_argument('-defscript',
 #                    action='store_true',
 #                    help='To parse the info of the defeaters and arguments',
@@ -126,9 +126,9 @@ program_path = args.p
 if not os.path.isdir(input_path):
     print('The path specified does not exist')
     sys.exit()
-if args.eval:
-    # Generate a set of programa and check is time
-    test.evaluate(input_path)
+if args.gencsv:
+    # Generate a set of program and check is time
+    test.gen_by_csv(input_path)
 if args.gen:
     # Generate a dataset
     test.test_generator(input_path)

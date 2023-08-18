@@ -525,13 +525,10 @@ class Generator:
             self.build_kb(level - 1)
             self.build_arguments(level)
 
-    def to_delp_format(self, result_path: str, id_program: int) -> None:
+    def to_delp_format(self) -> str:
         """
-        Save the delp program
-        Args:
-            result_path: The path for save the program
-            id_program: The id of the program
-        """ 
+        Return the delp program in string and json format
+        """
         program = []
         delp_json = []
         to_string = 'use_criterion(' + self.params["PREF_CRITERION"] + ').'
@@ -552,7 +549,18 @@ class Generator:
 
         for rule in program:
             to_string += rule + '\n'
-        
+
+        return [to_string, delp_json]
+
+
+    def write_delp_program(self, result_path: str, id_program: int) -> None:
+        """
+        Save or return the delp program
+        Args:
+            result_path: The path for save the program
+            id_program: The id of the program
+        """ 
+        [to_string, delp_json] = self.to_delp_format()
         with open(result_path + str(id_program) + 'delp' + '.delp', 'w') as outfile:
             outfile.write(to_string)
         
@@ -562,7 +570,8 @@ class Generator:
                     'literals': filtered_literals
                     })
 
-    def generate(self, result_path: str, hyperparams = 'undefined') -> None:
+    def generate(self, result_path: str, t_output: str, hyperparams =
+            'undefined') -> list:
         """
         Generate a delp program with hyperparams (if they are in <args>)
         Args:
@@ -571,11 +580,23 @@ class Generator:
         """
         if hyperparams != 'undefined':
             self.define_hyperparams(hyperparams)
-        
         n_files = len(glob.glob(result_path + '*.delp'))
-        for id_program in range(n_files, self.params["N_PROGRAMS"] + n_files):
-            self.clear_datastructures()
-            self.build_kb_base()
-            self.build_kb(self.params["LEVELS"])
-            self.build_dialectical_trees()
-            self.to_delp_format(result_path, id_program)
+        if t_output == 'write':
+            for id_program in range(n_files, self.params["N_PROGRAMS"] + n_files):
+                self.clear_datastructures()
+                self.build_kb_base()
+                self.build_kb(self.params["LEVELS"])
+                self.build_dialectical_trees()
+                self.write_delp_program(result_path, id_program)
+            return []
+        else:
+            generated_programs = []
+            for id_program in range(n_files, self.params["N_PROGRAMS"] + n_files):
+                self.clear_datastructures()
+                self.build_kb_base()
+                self.build_kb(self.params["LEVELS"])
+                self.build_dialectical_trees()
+                program = self.to_delp_format()[0]
+                generated_programs.append(program)
+            return generated_programs
+
