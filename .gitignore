@@ -3,3 +3,5 @@
 __pycache__/
 globalCore
 tags
+node_modules/
+yarn.lock
