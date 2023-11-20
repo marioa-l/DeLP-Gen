@@ -78,7 +78,7 @@ class Test:
 
 
 test = Test()
-parser = argparse.ArgumentParser(description='Test file for generate and metrics compute')
+parser = argparse.ArgumentParser(description='Script to generate DeLP programs and compute the value of their metrics')
 parser.add_argument('-load',
                     type=str,
                     help='The path for load dataset and save the results')

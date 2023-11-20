@@ -22,21 +22,28 @@ The following parameters can be adjusted to customize the generated DeLP program
 - `HEIGHT` : Height of dialectical trees 
 
 ## Usage
-In construction...
+DPG is equipped with a script that allows generating DeLP programs and computing the value of their metrics. Furthermore, the computation of metrics can be applied to a single program or a set of programs. The script is called [`main.py`](https://github.com/marioa-l/DeLP-Gen/blob/main/main.py) and accepts the following input arguments:
+
+usage: main.py [`-h`] [`-load` *path*] [`-all`] [`-gen`] [`-compute`] [`-approx`] [`-perc` %] [`-one`] [`-p` *program*] [`-defs`] [`-gencsv`]
+
+- `-load` [*path*] The path for loading the dataset and saving the results 
+- `-all` Compute a dataset - generate dataset and compute the metrics
+- `-gen` Only generate the programs 
+- `-compute` Compute the metrics
+- `-approx` Compute an approximation value of metrics)
+- `-perc` [%] Percentage of literals to consult per level to approximate metrics values 
+- `-one` Compute metrics for one program
+- `-p` [*program path*] DeLP program path
+- `-defs` Print arguments-defeaters info
+- `-gencsv` Evaluate set of parameters from csv
+
+***
+**Important**
+
+The value of the parameters to generate the programs must be specified in a `parameters.json` file and left at the path where you want to generate the programs.
+***
+
 <!--
-DPG is equipped with a script generator that supports the following input arguments:
-
-- **-load (The path for loading the dataset and saving the results):** 
-- **-all (Compute a dataset - generate dataset and compute the metrics):** 
-- **-gen (Only generate the programs):** 
-- **-compute (Compute the metrics):** 
-- **-approx (Compute an approximation value of metrics):** 
-- **-perc (Percentage of literals to consult per level to approximate metrics values):** 
-- **-one (Compute metrics for one program):** 
-- **-p (DeLP program path):** 
-- **-defs (Print arguments-defeaters info):** 
-- **-gencsv (Evaluate set of parameters from csv):** 
-
 ## Examples
 
 Here are a few examples of how to use the script generator:

@@ -1,6 +1,7 @@
 *.swp
 *.txt
 __pycache__/
+delpMetrics.py
 globalCore
 tags
 node_modules/
