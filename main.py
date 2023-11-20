@@ -82,35 +82,35 @@ parser = argparse.ArgumentParser(description='Script to generate DeLP programs a
 parser.add_argument('-load',
                     type=str,
                     help='The path for load dataset and save the results')
-parser.add_argument('-all',
-                    action='store_true',
-                    help='To compute a dataset (generate dataset and compute the metrics)')
-parser.add_argument('-gen',
-                    action='store_true',
-                    help='To only generate the programs')
-parser.add_argument('-compute',
-                    action='store_true',
-                    help='To compute the metrics')
-parser.add_argument('-approx',
-                    action='store_true',
-                    help='To compute an approximation value of metrics')
-parser.add_argument('-perc',
-                    type=int,
-                    help='Percentage of literals to consult per level to approximate metrics values')
-parser.add_argument('-one',
-                    action='store_true',
-                    help='To compute metrics for one program')
-parser.add_argument('-p',
-                    type=str,
-                    help='DeLP program path')
+#parser.add_argument('-all',
+#                    action='store_true',
+#                    help='To compute a dataset (generate dataset and compute the metrics)')
+#parser.add_argument('-gen',
+#                    action='store_true',
+#                    help='To only generate the programs')
+#parser.add_argument('-compute',
+#                    action='store_true',
+#                    help='To compute the metrics')
+#parser.add_argument('-approx',
+#                    action='store_true',
+#                    help='To compute an approximation value of metrics')
+#parser.add_argument('-perc',
+#                    type=int,
+#                    help='Percentage of literals to consult per level to approximate metrics values')
+#parser.add_argument('-one',
+#                    action='store_true',
+#                    help='To compute metrics for one program')
+#parser.add_argument('-p',
+#                    type=str,
+#                    help='DeLP program path')
 # This is for generate a file with all defeater's
-parser.add_argument('-defs',
-                    action='store_true',
-                    help='To print arguments-defeaters info'
-                    )
-parser.add_argument('-gencsv',
-                    action='store_true',
-                    help='To evaluate set of parameters from csv')
+#parser.add_argument('-defs',
+#                    action='store_true',
+#                    help='To print arguments-defeaters info'
+#                    )
+#parser.add_argument('-gencsv',
+#                    action='store_true',
+#                    help='To evaluate set of parameters from csv')
 #parser.add_argument('-defscript',
 #                    action='store_true',
 #                    help='To parse the info of the defeaters and arguments',
@@ -121,26 +121,26 @@ parser.add_argument('-gencsv',
 
 args = parser.parse_args()
 input_path = args.load
-program_path = args.p
+#program_path = args.p
 
 if not os.path.isdir(input_path):
     print('The path specified does not exist')
     sys.exit()
-if args.gencsv:
+#if args.gencsv:
     # Generate a set of program and check is time
-    test.gen_by_csv(input_path)
-if args.gen:
+#    test.gen_by_csv(input_path)
+#if args.gen:
     # Generate a dataset
-    test.test_generator(input_path)
-if args.compute:
+test.test_generator(input_path)
+#if args.compute:
     # Compute metrics
-    test.test_metrics(input_path, False)
-if args.all:
+#    test.test_metrics(input_path, False)
+#if args.all:
     # Compute Dataset
-    test.test_generator(input_path)
-    test.test_metrics(input_path, args.defs)
-elif args.one:
+#    test.test_generator(input_path)
+#    test.test_metrics(input_path, args.defs)
+#elif args.one:
     # Compute one delp program
-    test.test_metrics_one(input_path, program_path, args.defs)
+#    test.test_metrics_one(input_path, program_path, args.defs)
 # if args.defscript:
 #     test.parser_defs(input_path, args.fdefs)

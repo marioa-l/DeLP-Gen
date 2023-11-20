@@ -19,23 +19,14 @@ The following parameters can be adjusted to customize the generated DeLP program
 - `ARGLVL` : Minimum number of distinct arguments for each level 
 - `LVL` : Maximum argument level that can be reached 
 - `DEFT` : Maximum number of defeaters for an argument 
-- `HEIGHT` : Height of dialectical trees 
+- `HEIGHT` : Height of dialectical trees
+- `N_PROGRAMS` : Number of programs to generate
 
 ## Usage
-DPG is equipped with a script that allows generating DeLP programs and computing the value of their metrics. Furthermore, the computation of metrics can be applied to a single program or a set of programs. The script is called [`main.py`](https://github.com/marioa-l/DeLP-Gen/blob/main/main.py) and accepts the following input arguments:
+DPG is equipped with a script that allows generating DeLP programs. The script is called [`main.py`](https://github.com/marioa-l/DeLP-Gen/blob/main/main.py):
 
-usage: main.py [`-h`] [`-load` *path*] [`-all`] [`-gen`] [`-compute`] [`-approx`] [`-perc` %] [`-one`] [`-p` *program*] [`-defs`] [`-gencsv`]
-
-- `-load` [*path*] The path for loading the dataset and saving the results 
-- `-all` Compute a dataset - generate dataset and compute the metrics
-- `-gen` Only generate the programs 
-- `-compute` Compute the metrics
-- `-approx` Compute an approximation value of metrics)
-- `-perc` [%] Percentage of literals to consult per level to approximate metrics values 
-- `-one` Compute metrics for one program
-- `-p` [*program path*] DeLP program path
-- `-defs` Print arguments-defeaters info
-- `-gencsv` Evaluate set of parameters from csv
+usage: main.py [`-h`] [`-load` *path*]
+- `-load` [*path*] The path to load the file with the parameters and save the results.
 
 ***
 **Important**
@@ -43,10 +34,29 @@ usage: main.py [`-h`] [`-load` *path*] [`-all`] [`-gen`] [`-compute`] [`-approx`
 The value of the parameters to generate the programs must be specified in a `parameters.json` file and left at the path where you want to generate the programs.
 ***
 
-<!--
-## Examples
 
-Here are a few examples of how to use the script generator:
+**Example**
 
-1. To generate and compute metrics for a dataset:-->
+Here are a example of how to use the script generator:
 
+	main -load PATH
+
+In `PATH` there should be the `parameters.json` file formed as follows:
+
+	{
+		"BE": 5,
+		"FACTS": 0.5,
+		"NEG_PROB": 0.5, (still development)
+		"DRUL": 0.5,
+		"HEADS": 1,
+		"BODY": 2,
+		"ARGLVL": 2,
+		"LVL": 2,
+		"DEFT": 1,
+		"HEIGHT": 1,
+		"INNER_PROB": 0.0, (still development)
+		"N_PROGRAMS": 50,
+		"PREF_CRITERION": "more_specific" (still development)
+	}
+
+This will generate in `PATH` 50 delp programs with the value of the specified parameters. The parameters that are under development are not considered in this implementation, but they must be specified in the `parameter.json` file.

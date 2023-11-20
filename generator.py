@@ -563,11 +563,11 @@ class Generator:
         with open(result_path + str(id_program) + 'delp' + '.delp', 'w') as outfile:
             outfile.write(to_string)
         
-        filtered_literals =  {k: v for k, v in self.LITERALS.items() if v != []}
-        write_result(result_path + str(id_program) + 'delp' + '.json', {
-                    'delp': delp_json,
-                    'literals': filtered_literals
-                    })
+        #filtered_literals =  {k: v for k, v in self.LITERALS.items() if v != []}
+        #write_result(result_path + str(id_program) + 'delp' + '.json', {
+        #            'delp': delp_json,
+        #            'literals': filtered_literals
+        #            })
 
     def generate(self, result_path: str, t_output: str, hyperparams =
             'undefined') -> list:
