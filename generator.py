@@ -5,39 +5,38 @@ from utils import *
 """
 Hyperparams
 
-# Size of the KB Base
-KBBASE_SIZE
+# Minimum number of base elements
+BE
     
-# Probability to Facts elements in the KB BASE
-FACT_PROB
+# Percentage of facts in the base
+FACTS
 
-# Probability of negated literals in the KB BASE
+# Percentage of negated literals ()not yet implemented)
 NEG_PROB
 
-# Probability of Defeasible Rules in KB
-DRULE_PROB
+# Percentage of defeasible rules
+DRUL
 
-# Max rules defining the same literal 
-(MAX_RULES_PER_HEAD <= MAX_ARG_LEVEL)
-MAX_RULESPERHEAD
+#Maximum number of rules with the same head literal
+(HEADS <= ARGLVL)
+HEADS
 
-# Max size of body argument
-MAX_BODYSIZE
+#Maximum number of literals in the rule’s body
+BODY
 
-# Min number of different arguments in each level
-MIN_ARGSLEVEL
+#Minimum number of distinct arguments for each level
+ARGLVL
 
-# Levels of the KB
-LEVELS
+#Maximum argument level that can be reached
+LVL
 
-# Ramification factor for each dialectical tree
-(Max number of defeater for each argument)
-RAMIFICATION
+#Maximum number of defeaters for an argument
+DEFT
 
-# Max height of dialectical trees
-TREE_HEIGHT
+#Height of dialectical trees
+HEIGHT
 
-# Probability of attack a inner point of an argument
+# Probability of attack a inner point of an argument (not yet implemented)
 INNER_PROB
 
 # Number of programs to generate
@@ -135,16 +134,16 @@ class Generator:
         Define default values for all hyper parameters
         """ 
         self.params = {
-                "KBBASE_SIZE": 5,
-                "FACT_PROB": 0.5,
+                "BE": 5,
+                "FACTS": 0.5,
                 "NEG_PROB": 0.5,
-                "DRULE_PROB": 0.5,
-                "MAX_RULESPERHEAD": 1,
-                "MAX_BODYSIZE": 1,
-                "MIN_ARGSLEVEL": 1,
-                "LEVELS": 1,
-                "RAMIFICATION": 1,
-                "TREE_HEIGHT": 1,
+                "DRUL": 0.5,
+                "HEADS": 1,
+                "BODY": 1,
+                "ARGLVL": 1,
+                "LVL": 1,
+                "DEFT": 1,
+                "HEIGHT": 1,
                 "INNER_PROB": 0.5,
                 "N_PROGRAMS": 1,
                 "PREF_CRITERION": "more_specific"
@@ -296,7 +295,7 @@ class Generator:
         """
         if r_type == 'rnd':
             random_ds = get_random()
-            if random_ds < self.params["DRULE_PROB"]:
+            if random_ds < self.params["DRUL"]:
                 self.levels[level]['drules'].append((head, body))
                 self.rules['drules'].append(head)
                 self.LITERALS[level].append(head)
@@ -325,7 +324,7 @@ class Generator:
         possibles_srules = [index for index, srule in enumerate(self.levels[level]["srules"]) if srule[0] not in
                             self.USED_HEADS]
         random_ds = get_random()
-        if random_ds < self.params["DRULE_PROB"]:
+        if random_ds < self.params["DRUL"]:
             if len(possibles_drules) != 0:
                 # Take a drule (its position) from level <level>
                 index_drule = get_choice(possibles_drules)
@@ -366,7 +365,7 @@ class Generator:
         complement_conclusion = get_complement(conclusion)
         self.USED_HEADS = self.USED_HEADS + (complement_conclusion,)
 
-        body_size = get_randint(1, self.params["MAX_BODYSIZE"])
+        body_size = get_randint(1, self.params["BODY"])
         rule = self.get_one_rule_level(level - 1)
         rule_head = self.get_head(rule[1], rule[0], rule[2])
         self.USED_HEADS = self.USED_HEADS + (rule_head,)
@@ -402,13 +401,13 @@ class Generator:
         # To save all literals
         self.LITERALS[level] = []
         # Min number of different arguments in the level
-        min_args = self.params["MIN_ARGSLEVEL"]
+        min_args = self.params["ARGLVL"]
 
         for i_aux in range(min_args):
             # Generate a new head (conclusion)
             head = self.get_new_literal()
             # To define how many arguments with the same head to create
-            args_head = get_randint(1, self.params["MAX_RULESPERHEAD"])
+            args_head = get_randint(1, self.params["HEADS"])
             # Build all arguments for <head>
             for j_aux in range(args_head):
                 # Generate the body of the argument
@@ -446,7 +445,7 @@ class Generator:
             ntact_def.add(new_def_lit)
             body_def = list(ntact_def)
             head_def = get_complement(head)
-            self.add_to_kb(self.params["LEVELS"] + 1, head_def, body_def, 'drules')
+            self.add_to_kb(self.params["LVL"] + 1, head_def, body_def, 'drules')
             self.USED_NTACTSETS.append(ntact_def)
             return [head_def, [ntact_def]]
         else:
@@ -458,11 +457,11 @@ class Generator:
         To build all dialectical trees for arguments in the top level of the
         KB
         """
-        self.levels[self.params["LEVELS"] + 1] = {'drules': [], 'srules': []}
-        self.LITERALS[self.params["LEVELS"] + 1] = []
-        tree_height = self.params["TREE_HEIGHT"]
-        ramification = self.params["RAMIFICATION"]
-        for tipo, args in self.levels[self.params["LEVELS"]].items():
+        self.levels[self.params["LVL"] + 1] = {'drules': [], 'srules': []}
+        self.LITERALS[self.params["LVL"] + 1] = []
+        tree_height = self.params["HEIGHT"]
+        ramification = self.params["DEFT"]
+        for tipo, args in self.levels[self.params["LVL"]].items():
             for argument in args: 
                 complete_arg = self.build_complete_arguments(argument, tipo)
                 if is_defeasible(complete_arg):
@@ -501,10 +500,10 @@ class Generator:
         """
         self.levels[0] = {'drules': [], 'srules': []}
         self.LITERALS[0] = []
-        for i in range(self.params["KBBASE_SIZE"]):
+        for i in range(self.params["BE"]):
             random_fp = get_random()
             literal = self.get_new_literal()
-            if random_fp < self.params["FACT_PROB"]:
+            if random_fp < self.params["FACTS"]:
                 # New Fact
                 self.levels[0]['srules'].append((literal, ('true',)))
                 self.LITERALS[0].append(literal)
@@ -585,7 +584,7 @@ class Generator:
             for id_program in range(n_files, self.params["N_PROGRAMS"] + n_files):
                 self.clear_datastructures()
                 self.build_kb_base()
-                self.build_kb(self.params["LEVELS"])
+                self.build_kb(self.params["LVL"])
                 self.build_dialectical_trees()
                 self.write_delp_program(result_path, id_program)
             return []
@@ -594,7 +593,7 @@ class Generator:
             for id_program in range(n_files, self.params["N_PROGRAMS"] + n_files):
                 self.clear_datastructures()
                 self.build_kb_base()
-                self.build_kb(self.params["LEVELS"])
+                self.build_kb(self.params["LVL"])
                 self.build_dialectical_trees()
                 program = self.to_delp_format()[0]
                 generated_programs.append(program)
