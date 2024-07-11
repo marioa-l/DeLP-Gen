@@ -9,3 +9,4 @@ yarn.lock
 test/
 .idea/
 .DS_Store
+exp-paper.py
